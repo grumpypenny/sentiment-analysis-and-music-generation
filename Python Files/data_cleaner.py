@@ -59,10 +59,10 @@ class DataCleaner:
             print(f"Processed {line_count} data points.")
 
 
-        with open(sys.argv[1]+".csv", "w+", newline='') as new_data:
+        with open(f"../Data/{sys.argv[1]}.csv", "w+", encoding='utf-8', newline='') as new_data:
 
             writer = csv.writer(new_data)
-            writer.writerow(["emotion", "tweet"])
+            # writer.writerow(["emotion", "tweet"])
 
             for data_point in data:
                 writer.writerow(data_point)
