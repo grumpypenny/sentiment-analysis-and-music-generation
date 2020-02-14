@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-BATCH_SIZE = 32
+BATCH_SIZE = 128
 
 import torchtext
 import torch
@@ -30,7 +30,10 @@ class SentimentGRU(nn.Module):
         self.input_size = input_size
         self.rnn = nn.GRU(input_size, hidden_size, batch_first=True).cuda()
         # Since we are concatenating and averaging the GRU layers, we need a 50 dim vector for Linear Input
-        self.fcX = nn.Linear(hidden_size*2, num_classes).cuda()
+        self.fcX = nn.Linear(hidden_size*2, 100).cuda()
+        self.fc1 = nn.Linear(100, 8).cuda()
+
+        # self.fcX = nn.Linear(hidden_size*2, num_classes).cuda()
     
     def forward(self, x):
         # Convert x to one hot
@@ -48,12 +51,14 @@ class SentimentGRU(nn.Module):
                         torch.mean(out, dim=1)], dim=1).cuda() 
        
         out = self.fcX(out).cuda()
+        out = self.fc1(F.relu(out).cuda()).cuda()
         
         return out
 
 def train_rnn_network(model, train, valid, num_epochs=5, learning_rate=1e-5):
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    # optimizer = torch.optim.RMSprop(model.parameters(), lr=learning_rate)
     losses, train_acc, valid_acc = [], [], []
     epochs = []
     for epoch in range(num_epochs):
@@ -132,7 +137,7 @@ if __name__ == "__main__":
                                     preprocessing=lambda x: EMO_TO_CLASS[x]) # convert text to 0 and 1
 
     fields = [('label', label_field), ('tweet', text_field)]
-    dataset = torchtext.data.TabularDataset("../Data/utfdata.csv", # name of the file
+    dataset = torchtext.data.TabularDataset("../Data/data.csv", # name of the file
                                             "csv",               # fields are separated by a tab
                                             fields)
 
@@ -172,7 +177,19 @@ if __name__ == "__main__":
 
     # build a vocabulary of every character in dataset
     text_field.build_vocab(dataset)    
-    vocab = text_field.vocab.stoi
+    # vocab = text_field.vocab.stoi
+    # print(vocab, len(vocab))
+    # exit(0)
+
+    # Print 10 test examples
+    # k = 0
+    # for e in test.examples:
+    #     print(e.label, e.tweet)
+    #     print("")
+    #     k += 1
+
+    #     if k == 10:
+    #         exit(0)
 
     train_iter = torchtext.data.BucketIterator(train,
                                             batch_size=BATCH_SIZE,
@@ -235,8 +252,8 @@ if __name__ == "__main__":
     
 
     if sys.argv[1] == "-t":
-        model_gru = SentimentGRU(len(text_field.vocab.stoi), 50, 8)
-        train_rnn_network(model_gru, train_iter, valid_iter, num_epochs=15, learning_rate=9e-4)
+        model_gru = SentimentGRU(len(text_field.vocab.stoi), 100, 8)
+        train_rnn_network(model_gru, train_iter, valid_iter, num_epochs=200, learning_rate=0.001)
         print("Test Accuracy:", get_accuracy(model_gru, test_iter))
 
         if len(sys.argv) == 3:
