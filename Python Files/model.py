@@ -56,6 +56,9 @@ class SentimentGRU(nn.Module):
         return out
 
 def train_rnn_network(model, train, valid, num_epochs=5, learning_rate=1e-5):
+
+    print(f"Training for {num_epochs} epochs with lr={learning_rate}")
+
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     # optimizer = torch.optim.RMSprop(model.parameters(), lr=learning_rate)
@@ -251,14 +254,14 @@ if __name__ == "__main__":
                                             repeat=False)                  # repeat the iterator for many epochs                                   
     
 
-    if sys.argv[1] == "-t":
+    if len(sys.argv) >= 4 and sys.argv[1] == "-t":
         model_gru = SentimentGRU(len(text_field.vocab.stoi), 100, 8)
-        train_rnn_network(model_gru, train_iter, valid_iter, num_epochs=200, learning_rate=0.001)
+        train_rnn_network(model_gru, train_iter, valid_iter, num_epochs=int(sys.argv[2]), learning_rate=float(sys.argv[3]))
         print("Test Accuracy:", get_accuracy(model_gru, test_iter))
 
-        if len(sys.argv) == 3:
-            torch.save(model_gru.state_dict(), "../Models/"+sys.argv[2]+".pth")
-            print("Saved model to ../Models/", sys.argv[2] + ".pth")
+        if len(sys.argv) == 5:
+            torch.save(model_gru.state_dict(), "../Models/"+sys.argv[4]+".pth")
+            print("Saved model to ../Models/", sys.argv[4] + ".pth")
 
     elif len(sys.argv) == 3 and sys.argv[1] == "-i":
         model_gru = SentimentGRU(len(text_field.vocab.stoi), 50, 2)
@@ -290,7 +293,6 @@ if __name__ == "__main__":
             print("")
     else:
         print("Bad Usage")
-        print("To train a new network: python3.7 handout.py -t [model_name]")
-        print("To run interactive mode: python3.7 handout.py -i model_name")
-        print("")
+        print("To train a new network: python3.7 model.py -t epochs learning_rate [model_name]")
+        print("To run interactive mode: python3.7 model.py -i model_name\n")
                 
