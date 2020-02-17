@@ -180,7 +180,7 @@ if __name__ == "__main__":
 
     # build a vocabulary of every character in dataset
     text_field.build_vocab(dataset)    
-    # vocab = text_field.vocab.stoi
+    vocab = text_field.vocab.stoi
     # print(vocab, len(vocab))
     # exit(0)
 
@@ -264,7 +264,8 @@ if __name__ == "__main__":
             print("Saved model to ../Models/", sys.argv[4] + ".pth")
 
     elif len(sys.argv) == 3 and sys.argv[1] == "-i":
-        model_gru = SentimentGRU(len(text_field.vocab.stoi), 50, 2)
+      
+        model_gru = SentimentGRU(len(text_field.vocab.stoi), 100, 8)
         model_gru.load_state_dict(torch.load("../Models/"+sys.argv[2]+".pth"))
         model_gru.eval()
         print("Loaded model from ../Models/", sys.argv[2] + ".pth")
@@ -272,6 +273,15 @@ if __name__ == "__main__":
         inp_string = ""
 
         softmax = nn.Softmax(dim=0)
+
+        emotions = ["Excited",
+                    "Anger", 
+                    "Worry",
+                    "Sad",
+                    "Relief",
+                    "Love",
+                    "Happy",
+                    "Neutral"]
 
         while True:
             inp_string = input("Enter message: ")
@@ -284,13 +294,10 @@ if __name__ == "__main__":
 
             raw_pred = model_gru(x_tensor)
             pred = raw_pred.max(1, keepdim=True)[1]
-            msg_type_pred = int(pred[0][0])
+            pred_idx = int(pred[0][0])
 
-            if msg_type_pred == 1:
-                print("THIS IS SPAM!; Confidence: ", float(softmax(raw_pred[0])[1]))
-            elif msg_type_pred == 0:
-                print("THIS IS *NOT* SPAM!; Confidence: ", float(softmax(raw_pred[0])[0]))
-            print("")
+            print(f"{emotions[pred_idx]}; Confidence: {softmax(raw_pred[0])[pred_idx]}\n")
+
     else:
         print("Bad Usage")
         print("To train a new network: python3.7 model.py -t epochs learning_rate [model_name]")
