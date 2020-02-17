@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-BATCH_SIZE = 128
 
 import torchtext
 import torch
@@ -23,15 +22,16 @@ EMO_TO_CLASS = {"excited" : 0,
                 "neutral" : 7}
 
 class SentimentGRU(nn.Module):
-    def __init__(self, input_size, hidden_size, num_classes):
+    def __init__(self, input_size, hidden_size, num_classes, bi=False):
         super(SentimentGRU, self).__init__()
 
         self.hidden_size = hidden_size
         self.input_size = input_size
-        self.rnn = nn.GRU(input_size, hidden_size, batch_first=True).cuda()
-        # Since we are concatenating and averaging the GRU layers, we need a 50 dim vector for Linear Input
-        self.fcX = nn.Linear(hidden_size*2, 100).cuda()
-        self.fc1 = nn.Linear(100, 8).cuda()
+        self.rnn = nn.GRU(input_size, hidden_size, batch_first=True, bidirectional=bi).cuda()
+        
+        factor = int(2 + (int(bi) * 2))
+        self.fcX = nn.Linear(hidden_size*factor, 200).cuda()
+        self.fc1 = nn.Linear(200, 8).cuda()
 
         # self.fcX = nn.Linear(hidden_size*2, num_classes).cuda()
     
@@ -60,8 +60,8 @@ def train_rnn_network(model, train, valid, num_epochs=5, learning_rate=1e-5):
     print(f"Training for {num_epochs} epochs with lr={learning_rate}")
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    # optimizer = torch.optim.RMSprop(model.parameters(), lr=learning_rate)
+    # optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer = torch.optim.RMSprop(model.parameters(), lr=learning_rate)
     losses, train_acc, valid_acc = [], [], []
     epochs = []
     for epoch in range(num_epochs):
@@ -125,6 +125,9 @@ def convert_to_stoi(vocab, string):
 
 if __name__ == "__main__":
     
+    BATCH_SIZE = 128
+
+
     # set up datafield for messages
     text_field = torchtext.data.Field(sequential=True,    # text sequence
                                     tokenize=lambda x: x, # because are building a character-RNN
@@ -255,7 +258,7 @@ if __name__ == "__main__":
     
 
     if len(sys.argv) >= 4 and sys.argv[1] == "-t":
-        model_gru = SentimentGRU(len(text_field.vocab.stoi), 100, 8)
+        model_gru = SentimentGRU(len(text_field.vocab.stoi), 100, 8, True)
         train_rnn_network(model_gru, train_iter, valid_iter, num_epochs=int(sys.argv[2]), learning_rate=float(sys.argv[3]))
         print("Test Accuracy:", get_accuracy(model_gru, test_iter))
 
@@ -265,7 +268,7 @@ if __name__ == "__main__":
 
     elif len(sys.argv) == 3 and sys.argv[1] == "-i":
       
-        model_gru = SentimentGRU(len(text_field.vocab.stoi), 100, 8)
+        model_gru = SentimentGRU(len(text_field.vocab.stoi), 100, 8, True)
         model_gru.load_state_dict(torch.load("../Models/"+sys.argv[2]+".pth"))
         model_gru.eval()
         print("Loaded model from ../Models/", sys.argv[2] + ".pth")
