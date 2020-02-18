@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-BATCH_SIZE = 16
-
 import torchtext
 import torch
 import torch.nn as nn
@@ -26,18 +24,19 @@ S_140_KEY= {"negative": 0,
             "neutral": 1,
             "positive": 2}
 
-PATH_TO_DATA: "D:\School\_ML_project\sentiment\sentiment140"
-
 class SentimentGRU(nn.Module):
-    def __init__(self, input_size, hidden_size, num_classes):
+    def __init__(self, input_size, hidden_size, num_classes, bi=False):
         super(SentimentGRU, self).__init__()
 
         self.hidden_size = hidden_size
         self.input_size = input_size
-        self.rnn = nn.GRU(input_size, hidden_size, batch_first=True).cuda()
-        # Since we are concatenating and averaging the GRU layers, we need a 50 dim vector for Linear Input
-        self.fc1 = nn.ReLU()
-        self.fcX = nn.Linear(hidden_size*2, num_classes).cuda()
+        self.rnn = nn.GRU(input_size, hidden_size, batch_first=True, bidirectional=bi).cuda()
+        
+        factor = int(2 + (int(bi) * 2))
+        self.fcX = nn.Linear(hidden_size*factor, 200).cuda()
+        self.fc1 = nn.Linear(200, 8).cuda()
+
+        # self.fcX = nn.Linear(hidden_size*2, num_classes).cuda()
     
     def forward(self, x):
         # Convert x to one hot
@@ -54,14 +53,18 @@ class SentimentGRU(nn.Module):
         out = torch.cat([torch.max(out, dim=1)[0], 
                         torch.mean(out, dim=1)], dim=1).cuda() 
        
-        out = self.fc1(out).cuda()
         out = self.fcX(out).cuda()
+        out = self.fc1(F.relu(out).cuda()).cuda()
         
         return out
 
 def train_rnn_network(model, train, valid, num_epochs=5, learning_rate=1e-5):
+
+    print(f"Training for {num_epochs} epochs with lr={learning_rate}")
+
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    # optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer = torch.optim.RMSprop(model.parameters(), lr=learning_rate)
     losses, train_acc, valid_acc = [], [], []
     epochs = []
     for epoch in range(num_epochs):
@@ -124,6 +127,9 @@ def convert_to_stoi(vocab, string):
     return stoi
 
 if __name__ == "__main__":
+
+    BATCH_SIZE = 16
+
     
     # set up datafield for messages
     text_field = torchtext.data.Field(sequential=True,    # text sequence
@@ -177,7 +183,7 @@ if __name__ == "__main__":
     # train.examples = train.examples + relief * 6
     # train.examples = train.examples + love * 2
     # train.examples = train.examples + happy * 2
-    print("~~~~~~~")
+    print("="*75)
     print("new")
     print(f"Training Dataset: {len(train)}; Validation Dataset:{len(valid)}; Testing Dataset:{len(test)}")
 
@@ -245,17 +251,17 @@ if __name__ == "__main__":
                                             repeat=False)                  # repeat the iterator for many epochs                                   
     
 
-    if sys.argv[1] == "-t":
-        model_gru = SentimentGRU(len(text_field.vocab.stoi), 100, 3)
-        train_rnn_network(model_gru, train_iter, valid_iter, num_epochs=30, learning_rate=0.01)
+    if len(sys.argv) >= 4 and sys.argv[1] == "-t":
+        model_gru = SentimentGRU(len(text_field.vocab.stoi), 100, 3, True)
+        train_rnn_network(model_gru, train_iter, valid_iter, num_epochs=int(sys.argv[2]), learning_rate=float(sys.argv[3]))
         print("Test Accuracy:", get_accuracy(model_gru, test_iter))
 
-        if len(sys.argv) == 3:
-            torch.save(model_gru.state_dict(), "../Models/"+sys.argv[2]+".pth")
-            print("Saved model to ../Models/", sys.argv[2] + ".pth")
+        if len(sys.argv) == 5:
+            torch.save(model_gru.state_dict(), "../Models/"+sys.argv[4]+".pth")
+            print("Saved model to ../Models/", sys.argv[4] + ".pth")
 
     elif len(sys.argv) == 3 and sys.argv[1] == "-i":
-        model_gru = SentimentGRU(len(text_field.vocab.stoi), 50, 3)
+        model_gru = model_gru = SentimentGRU(len(text_field.vocab.stoi), 100, 3, True)
         model_gru.load_state_dict(torch.load("../Models/"+sys.argv[2]+".pth"))
         model_gru.eval()
         print("Loaded model from ../Models/", sys.argv[2] + ".pth")
@@ -263,6 +269,10 @@ if __name__ == "__main__":
         inp_string = ""
 
         softmax = nn.Softmax(dim=0)
+
+        emotions = ["Negative",
+                    "Neutral", 
+                    "Positive"]
 
         while True:
             inp_string = input("Enter message: ")
@@ -275,16 +285,11 @@ if __name__ == "__main__":
 
             raw_pred = model_gru(x_tensor)
             pred = raw_pred.max(1, keepdim=True)[1]
-            msg_type_pred = int(pred[0][0])
+            pred_idx = int(pred[0][0])
 
-            if msg_type_pred == 1:
-                print("THIS IS SPAM!; Confidence: ", float(softmax(raw_pred[0])[1]))
-            elif msg_type_pred == 0:
-                print("THIS IS *NOT* SPAM!; Confidence: ", float(softmax(raw_pred[0])[0]))
-            print("")
+            print(f"{emotions[pred_idx]}; Confidence: {softmax(raw_pred[0])[pred_idx]}\n")
     else:
         print("Bad Usage")
-        print("To train a new network: python3.7 handout.py -t [model_name]")
-        print("To run interactive mode: python3.7 handout.py -i model_name")
-        print("")
+        print("To train a new network: python3.7 s140.py -t epochs learning_rate [model_name]")
+        print("To run interactive mode: python3.7 s140.py -i model_name\n")
                 
