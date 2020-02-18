@@ -11,6 +11,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import sys
+import csv
+
 
 EMO_TO_CLASS = {"excited" : 0,
                 "anger" : 1, 
@@ -20,6 +22,15 @@ EMO_TO_CLASS = {"excited" : 0,
                 "love" : 5,
                 "happy" : 6,
                 "neutral" : 7}
+
+def get_emotion(class_num):
+    
+    for pair in EMO_TO_CLASS.items():
+        if class_num == pair[1]:
+            return pair[0]
+
+def get_class_num(emotion):
+    return EMO_TO_CLASS[emotion]
 
 class SentimentGRU(nn.Module):
     def __init__(self, input_size, hidden_size, num_classes, bi=False):
@@ -31,7 +42,7 @@ class SentimentGRU(nn.Module):
         
         factor = int(2 + (int(bi) * 2))
         self.fcX = nn.Linear(hidden_size*factor, 200).cuda()
-        self.fc1 = nn.Linear(200, 8).cuda()
+        self.fc1 = nn.Linear(200, num_classes).cuda()
 
         # self.fcX = nn.Linear(hidden_size*2, num_classes).cuda()
     
@@ -127,7 +138,6 @@ if __name__ == "__main__":
     
     BATCH_SIZE = 128
 
-
     # set up datafield for messages
     text_field = torchtext.data.Field(sequential=True,    # text sequence
                                     tokenize=lambda x: x, # because are building a character-RNN
@@ -140,20 +150,16 @@ if __name__ == "__main__":
                                     use_vocab=False,     # don't need to track vocabulary
                                     is_target=True,      
                                     batch_first=True,
-                                    preprocessing=lambda x: EMO_TO_CLASS[x]) # convert text to 0 and 1
+                                    preprocessing=lambda x: EMO_TO_CLASS[x])
 
     fields = [('label', label_field), ('tweet', text_field)]
-    dataset = torchtext.data.TabularDataset("../Data/data.csv", # name of the file
+    dataset = torchtext.data.TabularDataset("../Data/small_data.csv", # name of the file
                                             "csv",               # fields are separated by a tab
                                             fields)
 
     # 0.6, 0.2, 0.2 split, respectively
     train, valid, test = dataset.split([0.6, 0.2, 0.2])
 
-    # Ballancer Code for training dataset
-    # save the original training examples
-    # old_train_examples = train.examples
-    # get all the spam messages in `train`
     excited = []
     angry = []
     relief = []
@@ -181,21 +187,8 @@ if __name__ == "__main__":
 
     print(f"Training Dataset: {len(train)}; Validation Dataset:{len(valid)}; Testing Dataset:{len(test)}")
 
-    # build a vocabulary of every character in dataset
     text_field.build_vocab(dataset)    
     vocab = text_field.vocab.stoi
-    # print(vocab, len(vocab))
-    # exit(0)
-
-    # Print 10 test examples
-    # k = 0
-    # for e in test.examples:
-    #     print(e.label, e.tweet)
-    #     print("")
-    #     k += 1
-
-    #     if k == 10:
-    #         exit(0)
 
     train_iter = torchtext.data.BucketIterator(train,
                                             batch_size=BATCH_SIZE,
@@ -217,48 +210,57 @@ if __name__ == "__main__":
                                             repeat=False)                  # repeat the iterator for many epochs
 
 
+    num_classes = 8
+    model_gru = SentimentGRU(len(text_field.vocab.stoi), 100, num_classes, True)
 
-    # Use the following block to get false positve/negative rates for *test* set
-    
-    # # Create a Dataset of only spam test examples (positive)
-    # test_spam = torchtext.data.Dataset(
-    #     [e for e in test.examples if e.label == 1],
-    #     test.fields)
-    # # Create a Dataset of only non-spam test examples (negative)
-    # test_ham = torchtext.data.Dataset(
-    #     [e for e in test.examples if e.label != 1],
-    #     test.fields)
+    # Confusion Matrix Generation Mode
+    if len(sys.argv) >= 4 and sys.argv[1] == "-c":
+        train_rnn_network(model_gru, train_iter, valid_iter, num_epochs=int(sys.argv[2]), learning_rate=float(sys.argv[3]))
+        print("Test Accuracy:", get_accuracy(model_gru, test_iter))
+       
+        confusion_matrix = []
+        for i in range(num_classes):
+            a = [0]
+            confusion_matrix.append(a*num_classes)
 
+        for msg, labels in test_iter:
+            output = model_gru(msg[0].cuda())
+            pred = output.max(1, keepdim=True)[1]
+            
+            for i in range(pred.shape[0]):
+                pred_idx = int(pred[i][0])
+                true_idx = int(labels[i])
 
-    # Use the following block to get false positve/negative rates for *validation* set
+                confusion_matrix[true_idx][pred_idx] += 1
+        
+        print("Confusion Matrix:")
+        for row in confusion_matrix:
+            print(row)
 
-    # Create a Dataset of only spam validation examples (positive)
-    valid_spam = torchtext.data.Dataset(
-        [e for e in valid.examples if e.label == 1],
-        valid.fields)
-    # Create a Dataset of only non-spam validation examples (negative)
-    valid_ham = torchtext.data.Dataset(
-        [e for e in valid.examples if e.label != 1],
-        valid.fields)
+        if len(sys.argv) == 5:
+            with open(f"../Utilities/{sys.argv[4]}.csv", "w+", encoding='utf-8', newline='') as new_data:
 
-    spam_iter_dataset = valid_spam
-    ham_iter_dataset = valid_ham
+                writer = csv.writer(new_data)
+                # header = [""] + list(range(num_classes))
+                header = [""]
 
-    spam_iter = torchtext.data.BucketIterator(spam_iter_dataset,
-                                            batch_size=BATCH_SIZE,
-                                            sort_key=lambda x: len(x.tweet), # to minimize padding
-                                            sort_within_batch=True,        # sort within each batch
-                                            repeat=False)                  # repeat the iterator for many epochs
+                for i in range(num_classes):
+                    header += [get_emotion(i)]
+                
+                writer.writerow(header)
 
-    ham_iter = torchtext.data.BucketIterator(ham_iter_dataset,
-                                            batch_size=BATCH_SIZE,
-                                            sort_key=lambda x: len(x.tweet), # to minimize padding
-                                            sort_within_batch=True,        # sort within each batch
-                                            repeat=False)                  # repeat the iterator for many epochs                                   
-    
+                i = 0
+                for row in confusion_matrix:
+                    # indexed_row = [i] + row
+                    indexed_row = [get_emotion(i)] + row
+                    writer.writerow(indexed_row)
+                    i += 1
 
-    if len(sys.argv) >= 4 and sys.argv[1] == "-t":
-        model_gru = SentimentGRU(len(text_field.vocab.stoi), 100, 8, True)
+            print("")
+            print(f"Saved to: ../Utilities/{sys.argv[4]}.csv")
+
+    # Training Mode
+    elif len(sys.argv) >= 4 and sys.argv[1] == "-t":
         train_rnn_network(model_gru, train_iter, valid_iter, num_epochs=int(sys.argv[2]), learning_rate=float(sys.argv[3]))
         print("Test Accuracy:", get_accuracy(model_gru, test_iter))
 
@@ -266,9 +268,8 @@ if __name__ == "__main__":
             torch.save(model_gru.state_dict(), "../Models/"+sys.argv[4]+".pth")
             print("Saved model to ../Models/", sys.argv[4] + ".pth")
 
+    # Interactive Mode
     elif len(sys.argv) == 3 and sys.argv[1] == "-i":
-      
-        model_gru = SentimentGRU(len(text_field.vocab.stoi), 100, 8, True)
         model_gru.load_state_dict(torch.load("../Models/"+sys.argv[2]+".pth"))
         model_gru.eval()
         print("Loaded model from ../Models/", sys.argv[2] + ".pth")
@@ -276,15 +277,6 @@ if __name__ == "__main__":
         inp_string = ""
 
         softmax = nn.Softmax(dim=0)
-
-        emotions = ["Excited",
-                    "Anger", 
-                    "Worry",
-                    "Sad",
-                    "Relief",
-                    "Love",
-                    "Happy",
-                    "Neutral"]
 
         while True:
             inp_string = input("Enter message: ")
@@ -299,10 +291,11 @@ if __name__ == "__main__":
             pred = raw_pred.max(1, keepdim=True)[1]
             pred_idx = int(pred[0][0])
 
-            print(f"{emotions[pred_idx]}; Confidence: {softmax(raw_pred[0])[pred_idx]}\n")
+            print(f"{get_emotion(pred_idx)}; Confidence: {softmax(raw_pred[0])[pred_idx]}\n")
 
     else:
         print("Bad Usage")
+        print("To generate confusion matrix: python3.7 model.py -c epochs learning_rate [csv_save_file]")
         print("To train a new network: python3.7 model.py -t epochs learning_rate [model_name]")
         print("To run interactive mode: python3.7 model.py -i model_name\n")
                 

@@ -34,7 +34,7 @@ class SentimentGRU(nn.Module):
         
         factor = int(2 + (int(bi) * 2))
         self.fcX = nn.Linear(hidden_size*factor, 200).cuda()
-        self.fc1 = nn.Linear(200, 8).cuda()
+        self.fc1 = nn.Linear(200, num_classes).cuda()
 
         # self.fcX = nn.Linear(hidden_size*2, num_classes).cuda()
     
@@ -129,7 +129,6 @@ def convert_to_stoi(vocab, string):
 if __name__ == "__main__":
 
     BATCH_SIZE = 16
-
     
     # set up datafield for messages
     text_field = torchtext.data.Field(sequential=True,    # text sequence
