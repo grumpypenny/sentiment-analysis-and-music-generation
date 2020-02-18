@@ -26,6 +26,8 @@ S_140_KEY= {"negative": 0,
             "neutral": 1,
             "positive": 2}
 
+PATH_TO_DATA: "D:\School\_ML_project\sentiment\sentiment140"
+
 class SentimentGRU(nn.Module):
     def __init__(self, input_size, hidden_size, num_classes):
         super(SentimentGRU, self).__init__()
