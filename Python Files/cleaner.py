@@ -7,7 +7,7 @@ DATA_BUNDLER = {'0' : "negative",
                 '2' : "neutral",
                 '4' : "positive"}
 
-PATH_TO_DATA: "D:\School\_ML_project\sentiment\sentiment140"
+# PATH_TO_DATA: "D:\School\_ML_project\sentiment\sentiment140"
 
 class DataCleaner:
 
@@ -26,15 +26,20 @@ class DataCleaner:
         
                 emotion = row[0]
                 tweet = row[5]
-
-                if ("\t" in tweet or " " in tweet): # Remove tabs and spaces and replace with one space
+                
+                # Remove tabs and spaces and replace with one space
+                if ("\t" in tweet or " " in tweet): 
                     tweet = re.sub(r'[\t\s]+', ' ', tweet)
+                
+                # remove any links
+                tweet = re.sub(r'\bhttp(s?):\/\/[^\s]+', "", tweet)
                 
                 # Strip @person from tweets
                 if '@' in tweet:
                     # remove @handle
                     # remove @ handle
                     tweet = re.sub(r'(@\s[^\s]+\s)|(@[^\s]+(\s?))', "", tweet)
+
                     if not tweet:
                         continue
                     # print(f"NEW: {tweet}\n")
