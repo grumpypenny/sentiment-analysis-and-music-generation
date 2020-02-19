@@ -1,9 +1,0 @@
-,excited,anger,worry,sad,relief,love,happy,neutral
-excited,0,0,0,0,0,0,0,0
-anger,1,0,0,0,0,0,0,0
-worry,1,0,1,2,0,0,0,1
-sad,1,0,1,9,0,0,0,0
-relief,0,0,1,0,0,0,0,0
-love,0,0,0,0,0,0,0,0
-happy,0,0,0,2,0,0,0,0
-neutral,0,0,5,4,0,0,0,1

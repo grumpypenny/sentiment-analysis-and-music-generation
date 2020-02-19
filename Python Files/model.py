@@ -237,7 +237,7 @@ if __name__ == "__main__":
             print(row)
 
         if len(sys.argv) == 5:
-            with open(f"../Utilities/{sys.argv[4]}.csv", "w+", encoding='utf-8', newline='') as new_data:
+            with open(f"../../Sentiment Analysis Model Report/{sys.argv[4]}.csv", "w+", encoding='utf-8', newline='') as new_data:
 
                 writer = csv.writer(new_data)
                 # header = [""] + list(range(num_classes))
@@ -256,7 +256,7 @@ if __name__ == "__main__":
                     i += 1
 
             print("")
-            print(f"Saved to: ../Utilities/{sys.argv[4]}.csv")
+            print(f"Saved to: ../../Sentiment Analysis Model Report/{sys.argv[4]}.csv")
 
     # Training Mode
     elif len(sys.argv) >= 4 and sys.argv[1] == "-t":

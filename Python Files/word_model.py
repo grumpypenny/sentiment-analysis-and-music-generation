@@ -97,7 +97,7 @@ def train_rnn_network(model, train, train_batch, valid, num_epochs=5, learning_r
             loss.backward()
             optimizer.step()
         losses.append(float(loss))
-
+        
         epochs.append(epoch)
         train_acc.append(get_accuracy(model, train))
         valid_acc.append(get_accuracy(model, valid))
@@ -106,7 +106,6 @@ def train_rnn_network(model, train, train_batch, valid, num_epochs=5, learning_r
 
         if checkpoint and (epoch + 1) % checkpoint == 0:
             model.save_model(model.name + f"-{epoch + 1}")
-            
     
     # Plot curves
     plt.title("Loss Training Curve")
@@ -233,63 +232,72 @@ if __name__ == "__main__":
 
     # 0.6, 0.2, 0.2 split, respectively
     train, valid, test = get_tweet_vectors(glove, f, GLOVE_SIZE, [0.6, 0.2, 0.2], shuffle=True)
-  
-    excited = []
-    angry = []
-    relief = []
-    love = []
-    happy = []
+    
+    # Use only for crowd flower
+    # excited = []
+    # angry = []
+    # relief = []
+    # love = []
+    # happy = []
 
-    for item in train:
-        label = int(item[1])
-        if label == 0:
-            excited.append(item)
-        elif label == 1:
-            angry.append(item)
-        elif label == 4:
-            relief.append(item)
-        elif label == 5:
-            love.append(item)
-        elif label == 6:
-            happy.append(item)
+    # for item in train:
+    #     label = int(item[1])
+    #     if label == 0:
+    #         excited.append(item)
+    #     elif label == 1:
+    #         angry.append(item)
+    #     elif label == 4:
+    #         relief.append(item)
+    #     elif label == 5:
+    #         love.append(item)
+    #     elif label == 6:
+    #         happy.append(item)
         
-    # duplicate each spam message 6 more times
-    train = train + excited * 2
-    train = train + angry * 6
-    train = train + relief * 6
-    train = train + love * 2
-    train = train + happy * 2
+    # # duplicate each spam message 6 more times
+    # train = train + excited * 2
+    # train = train + angry * 6
+    # train = train + relief * 6
+    # train = train + love * 2
+    # train = train + happy * 2
 
     print(f"Training Dataset: {len(train)}; Validation Dataset:{len(valid)}; Testing Dataset:{len(test)}")
     train_batches = make_batches(train, BATCH_SIZE, GLOVE_SIZE)
     model_gru = SentimentGRU(GLOVE_SIZE, 100, NUM_CLASSES, bi=True)
 
     # Confusion Matrix Generation Mode
-    if len(sys.argv) >= 4 and sys.argv[1] == "-c":
-        train_rnn_network(model_gru, train_iter, valid_iter, num_epochs=int(sys.argv[2]), learning_rate=float(sys.argv[3]))
-        print("Test Accuracy:", get_accuracy(model_gru, test_iter))
+    if 4 <= len(sys.argv) <= 5 and sys.argv[1] == "-c":
+        epochs = int(sys.argv[2])
+        lrate = float(sys.argv[3])
+        csv_name = ""
+
+        if len(sys.argv) >= 5:
+            csv_name = sys.argv[4]
+        
+        train_rnn_network(model_gru, train, train_batches, valid, num_epochs=epochs, learning_rate=lrate)
+        print("Test Accuracy:", get_accuracy(model_gru, test))
        
         confusion_matrix = []
         for i in range(NUM_CLASSES):
             a = [0]
             confusion_matrix.append(a*NUM_CLASSES)
 
-        for msg, labels in test_iter:
-            output = model_gru(msg[0].cuda())
+        for data in test:
+            tweet, label = data
+            tweet = tweet.unsqueeze(0)
+            output = model_gru(tweet.cuda())
             pred = output.max(1, keepdim=True)[1]
-            
-            for i in range(pred.shape[0]):
-                pred_idx = int(pred[i][0])
-                true_idx = int(labels[i])
 
-                confusion_matrix[true_idx][pred_idx] += 1
+            pred_idx = int(pred)            
+            true_idx = int(label)
+
+            confusion_matrix[true_idx][pred_idx] += 1
         
         print("Confusion Matrix:")
         for row in confusion_matrix:
             print(row)
 
-        if len(sys.argv) == 5:
-            with open(f"../Utilities/{sys.argv[4]}.csv", "w+", encoding='utf-8', newline='') as new_data:
+        if csv_name:
+            with open(f"../../Sentiment Analysis Model Report/{csv_name}.csv", "w+", encoding='utf-8', newline='') as new_data:
 
                 writer = csv.writer(new_data)
                 # header = [""] + list(range(NUM_CLASSES))
@@ -308,7 +316,7 @@ if __name__ == "__main__":
                     i += 1
 
             print("")
-            print(f"Saved to: ../Utilities/{sys.argv[4]}.csv")
+            print(f"Saved to: ../../Sentiment Analysis Model Report/{csv_name}.csv")
 
     # Training Mode
     elif len(sys.argv) >= 4 and sys.argv[1] == "-t":
@@ -330,35 +338,6 @@ if __name__ == "__main__":
         if not checkpoint_interval:
             model_gru.save_model(model_name)
 
-    # TODO: Interactive mode for word level model
-    # # Interactive Mode
-    # elif len(sys.argv) == 3 and sys.argv[1] == "-i":
-    #     model_gru.load_state_dict(torch.load("../Models/"+sys.argv[2]+".pth"))
-    #     model_gru.eval()
-    #     print("Loaded model from ../Models/", sys.argv[2] + ".pth")
-
-    #     inp_string = ""
-
-    #     softmax = nn.Softmax(dim=0)
-
-    #     while True:
-    #         inp_string = input("Enter message: ")
-
-    #         if not inp_string:
-    #             break # exit
-
-    #         stoi = convert_to_stoi(vocab, inp_string)
-    #         x_tensor = torch.tensor([stoi])
-
-    #         raw_pred = model_gru(x_tensor)
-    #         pred = raw_pred.max(1, keepdim=True)[1]
-    #         pred_idx = int(pred[0][0])
-
-    #         print(f"{get_emotion(pred_idx)}; Confidence: {softmax(raw_pred[0])[pred_idx]}\n")
-
     else:
         print("Bad Usage")
-        print("To generate confusion matrix: python3.7 model.py -c epochs learning_rate [csv_save_file]")
-        print("To train a new network: python3.7 model.py -t epochs learning_rate [model_name] [check_point_interval]")
-        # print("To run interactive mode: python3.7 model.py -i model_name\n")
                 
