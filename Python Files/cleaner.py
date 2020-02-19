@@ -32,8 +32,9 @@ class DataCleaner:
                 
                 # Strip @person from tweets
                 if '@' in tweet:
-                    # print(f"OLD: {tweet}")
-                    tweet = re.sub(r'@[^\s]+(\s?)', "", tweet)
+                    # remove @handle
+                    # remove @ handle
+                    tweet = re.sub(r'(@\s[^\s]+\s)|(@[^\s]+(\s?))', "", tweet)
                     if not tweet:
                         continue
                     # print(f"NEW: {tweet}\n")
