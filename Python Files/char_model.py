@@ -21,9 +21,9 @@ EMO_TO_CLASS = {"excited" : 0,
                 "happy" : 6,
                 "neutral" : 7}
 
-# S_140_KEY= {"negative": 0,
-#             "neutral": 1,
-#             "positive": 2}
+S_140_KEY= {"negative": 0,
+            "neutral": 1,
+            "positive": 2}
 
 class SentimentGRU(nn.Module):
     def __init__(self, input_size, hidden_size, num_classes, bi=False):
@@ -37,7 +37,9 @@ class SentimentGRU(nn.Module):
         
         factor = int(2 + (int(bi) * 2))
         self.fcX = nn.Linear(hidden_size*factor, 200).cuda()
-        self.fc1 = nn.Linear(200, num_classes).cuda()
+        self.fc1 = nn.Linear(200, 100).cuda()
+        self.fc2 = nn.Linear(100, 50).cuda()
+        self.fc3 = nn.Linear(50, num_classes).cuda()
 
         # self.fcX = nn.Linear(hidden_size*2, num_classes).cuda()
     
@@ -58,6 +60,8 @@ class SentimentGRU(nn.Module):
        
         out = self.fcX(out).cuda()
         out = self.fc1(F.relu(out).cuda()).cuda()
+        out = self.fc2(F.relu(out).cuda()).cuda()
+        out = self.fc3(F.relu(out).cuda()).cuda()
         
         return out
 
@@ -139,20 +143,20 @@ def convert_to_stoi(vocab, string):
 
 def get_emotion(class_num):
     
-    # for pair in S_140_KEY.items():
-    for pair in EMO_TO_CLASS.items():
+    for pair in S_140_KEY.items():
+    # for pair in EMO_TO_CLASS.items():
         if class_num == pair[1]:
             return pair[0]
 
 def get_class_num(emotion):
-    # return S_140_KEY[emotion]
-    return EMO_TO_CLASS[emotion]
+    return S_140_KEY[emotion]
+    # return EMO_TO_CLASS[emotion]
 
 if __name__ == "__main__":
 
-    BATCH_SIZE = 16
-    # NUM_CLASSES = 3
-    NUM_CLASSES = 8
+    BATCH_SIZE = 64
+    NUM_CLASSES = 3
+    # NUM_CLASSES = 8
     
     # set up datafield for messages
     text_field = torchtext.data.Field(sequential=True,    # text sequence
@@ -166,43 +170,43 @@ if __name__ == "__main__":
                                     use_vocab=False,     # don't need to track vocabulary
                                     is_target=True,      
                                     batch_first=True,
-                                    # preprocessing=lambda x: S_140_KEY[x]) # convert text to 0 and 1
-                                    preprocessing=lambda x: EMO_TO_CLASS[x])
+                                    preprocessing=lambda x: S_140_KEY[x]) # convert text to 0 and 1
+                                    # preprocessing=lambda x: EMO_TO_CLASS[x])
 
     fields = [('label', label_field), ('tweet', text_field)]
-    dataset = torchtext.data.TabularDataset("../Data/bigger_data.csv", # name of the file
+    dataset = torchtext.data.TabularDataset("../Data/s140_500tweets.csv", # name of the file
                                             "csv",               # fields are separated by a tab
                                             fields)
 
     # 0.6, 0.2, 0.2 split, respectively
     train, valid, test = dataset.split([0.6, 0.2, 0.2])
 
-    # Use only for crowd flower
-    excited = []
-    angry = []
-    relief = []
-    love = []
-    happy = []
+    # # Use only for crowd flower
+    # excited = []
+    # angry = []
+    # relief = []
+    # love = []
+    # happy = []
 
-    for item in train.examples:
-        label = item.label
-        if label == 0:
-            excited.append(item)
-        elif label == 1:
-            angry.append(item)
-        elif label == 4:
-            relief.append(item)
-        elif label == 5:
-            love.append(item)
-        elif label == 6:
-            happy.append(item)
+    # for item in train.examples:
+    #     label = item.label
+    #     if label == 0:
+    #         excited.append(item)
+    #     elif label == 1:
+    #         angry.append(item)
+    #     elif label == 4:
+    #         relief.append(item)
+    #     elif label == 5:
+    #         love.append(item)
+    #     elif label == 6:
+    #         happy.append(item)
         
-    # duplicate each spam message 6 more times
-    train.examples = train.examples + excited * 2
-    train.examples = train.examples + angry * 6
-    train.examples = train.examples + relief * 6
-    train.examples = train.examples + love * 2
-    train.examples = train.examples + happy * 2
+    # # duplicate each spam message 6 more times
+    # train.examples = train.examples + excited * 2
+    # train.examples = train.examples + angry * 6
+    # train.examples = train.examples + relief * 6
+    # train.examples = train.examples + love * 2
+    # train.examples = train.examples + happy * 2
 
     print(f"Training Dataset: {len(train)}; Validation Dataset:{len(valid)}; Testing Dataset:{len(test)}")
 

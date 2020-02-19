@@ -130,3 +130,9 @@ dmypy.json
 
 # GloVe Vector Cache
 .vector_cache
+
+# Ignore Sentiment 140 Mother dataset
+training.1600000.processed.noemoticon.csv
+
+# Ignore model files
+Models/*.pth
