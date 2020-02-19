@@ -2,6 +2,7 @@
 import csv
 import re
 import sys
+import random
 
 DATA_BUNDLER = {'0' : "negative",
                 '2' : "neutral",
@@ -54,21 +55,29 @@ class DataCleaner:
 
                 line_count += 1
 
-            print(emotions, len(emotions))
-            print(f"Processed {line_count} data points.")
+                # if line_count % 2000 == 0:
+                    # break
 
+            print(emotions, len(emotions))
+            print(f"Processed {len(data)} data points.")
+
+            random.shuffle(data)
 
         with open(path_save, "w", encoding='utf-8', newline='') as new:
             wrtr = csv.writer(new)
-
+            i = 0
             for point in data:
                 wrtr.writerow(point)
+                i += 1
+                if i % 2000 == 0:
+                    break
 
-            print("done")
+
+            print(f"Extracted {i} data points.")
 
 
 
 if __name__ == '__main__':
     
-    DataCleaner.generate_clean_dataset("../Data/testdata.manual.2009.06.14.csv",
-     "../Data/s140_500tweets.csv")
+    DataCleaner.generate_clean_dataset("../Data/training.1600000.processed.noemoticon.csv",
+     "../Data/s140_2000tweets.csv")

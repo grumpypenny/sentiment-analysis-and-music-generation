@@ -22,9 +22,14 @@ EMO_TO_CLASS = {"excited" : 0,
                 "happy" : 6,
                 "neutral" : 7}
 
+# S_140_KEY= {"negative": 0,
+#             "neutral": 1,
+#             "positive": 2}
+
+
 S_140_KEY= {"negative": 0,
-            "neutral": 1,
-            "positive": 2}
+            "positive": 1}
+
 
 class SentimentGRU(nn.Module):
     def __init__(self, input_size, hidden_size, num_classes, bi=False):
@@ -224,11 +229,11 @@ if __name__ == "__main__":
     
     BATCH_SIZE = 128
     GLOVE_SIZE = 100
-    NUM_CLASSES = 3
+    NUM_CLASSES = 2
     # NUM_CLASSES = 8
 
     glove = torchtext.vocab.GloVe(name="6B", dim=GLOVE_SIZE, max_vectors=10000)
-    f = open("../Data/s140_500tweets.csv", "rt")
+    f = open("../Data/s140_2000tweets.csv", "rt", encoding="utf8")
 
     # 0.6, 0.2, 0.2 split, respectively
     train, valid, test = get_tweet_vectors(glove, f, GLOVE_SIZE, [0.6, 0.2, 0.2], shuffle=True)

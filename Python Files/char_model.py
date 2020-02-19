@@ -21,9 +21,14 @@ EMO_TO_CLASS = {"excited" : 0,
                 "happy" : 6,
                 "neutral" : 7}
 
+# S_140_KEY= {"negative": 0,
+#             "neutral": 1,
+#             "positive": 2}
+
+
 S_140_KEY= {"negative": 0,
-            "neutral": 1,
-            "positive": 2}
+            "positive": 1}
+
 
 class SentimentGRU(nn.Module):
     def __init__(self, input_size, hidden_size, num_classes, bi=False):
@@ -37,9 +42,9 @@ class SentimentGRU(nn.Module):
         
         factor = int(2 + (int(bi) * 2))
         self.fcX = nn.Linear(hidden_size*factor, 200).cuda()
-        self.fc1 = nn.Linear(200, 100).cuda()
-        self.fc2 = nn.Linear(100, 50).cuda()
-        self.fc3 = nn.Linear(50, num_classes).cuda()
+        self.fc1 = nn.Linear(200, 70).cuda()
+        self.fc2 = nn.Linear(70, 10).cuda()
+        self.fc3 = nn.Linear(10, num_classes).cuda()
 
         # self.fcX = nn.Linear(hidden_size*2, num_classes).cuda()
     
@@ -155,7 +160,7 @@ def get_class_num(emotion):
 if __name__ == "__main__":
 
     BATCH_SIZE = 64
-    NUM_CLASSES = 3
+    NUM_CLASSES = 2
     # NUM_CLASSES = 8
     
     # set up datafield for messages
@@ -174,7 +179,7 @@ if __name__ == "__main__":
                                     # preprocessing=lambda x: EMO_TO_CLASS[x])
 
     fields = [('label', label_field), ('tweet', text_field)]
-    dataset = torchtext.data.TabularDataset("../Data/s140_500tweets.csv", # name of the file
+    dataset = torchtext.data.TabularDataset("../Data/s140_2000tweets.csv", # name of the file
                                             "csv",               # fields are separated by a tab
                                             fields)
 
