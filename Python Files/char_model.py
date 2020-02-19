@@ -67,7 +67,6 @@ class SentimentGRU(nn.Module):
         out = self.fc1(F.relu(out).cuda()).cuda()
         out = self.fc2(F.relu(out).cuda()).cuda()
         out = self.fc3(F.relu(out).cuda()).cuda()
-        
         return out
 
     def save_model(self, name):
@@ -80,8 +79,8 @@ def train_rnn_network(model, train, valid, num_epochs=5, learning_rate=1e-5, che
     print(f"Training for {num_epochs} epochs with lr={learning_rate}")
 
     criterion = nn.CrossEntropyLoss()
-    # optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    optimizer = torch.optim.RMSprop(model.parameters(), lr=learning_rate)
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    # optimizer = torch.optim.RMSprop(model.parameters(), lr=learning_rate)
     losses, train_acc, valid_acc = [], [], []
     epochs = []
     for epoch in range(num_epochs):

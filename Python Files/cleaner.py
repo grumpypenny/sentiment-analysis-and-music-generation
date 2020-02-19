@@ -28,6 +28,9 @@ class DataCleaner:
                 emotion = row[0]
                 tweet = row[5]
                 
+                # make all lower case
+                tweet = tweet.lower()
+
                 # Remove tabs and spaces and replace with one space
                 if ("\t" in tweet or " " in tweet): 
                     tweet = re.sub(r'[\t\s]+', ' ', tweet)
@@ -35,6 +38,9 @@ class DataCleaner:
                 # remove any links
                 tweet = re.sub(r'\bhttp(s?):\/\/[^\s]+', "", tweet)
                 
+                # remove all non-letters/numbers and spaces
+                tweet = re.sub(r'[^0-9a-z,\s]+', "", tweet)
+
                 # Strip @person from tweets
                 if '@' in tweet:
                     # remove @handle
