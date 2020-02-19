@@ -29,6 +29,7 @@ S_140_KEY= {"negative": 0,
 class SentimentGRU(nn.Module):
     def __init__(self, input_size, hidden_size, num_classes, bi=False):
         super(SentimentGRU, self).__init__()
+        self.name = ""
         self.emb = nn.Embedding.from_pretrained(glove.vectors).cuda()
         self.hidden_size = hidden_size
         self.input_size = input_size
@@ -62,6 +63,11 @@ class SentimentGRU(nn.Module):
         
         return out
 
+    def save_model(self, name):
+        if name:
+            torch.save(self.state_dict(), "../Models/"+name+".pth")
+            print(f"Saved model to ../Models/{name}.pth")
+
 def get_emotion(class_num):
     
     for pair in S_140_KEY.items():
@@ -73,7 +79,7 @@ def get_class_num(emotion):
     return S_140_KEY[emotion]
     # return EMO_TO_CLASS[emotion]
 
-def train_rnn_network(model, train, train_batch, valid, num_epochs=5, learning_rate=1e-5):
+def train_rnn_network(model, train, train_batch, valid, num_epochs=5, learning_rate=1e-5, checkpoint=None):
 
     print(f"Training for {num_epochs} epochs with lr={learning_rate}")
 
@@ -97,6 +103,10 @@ def train_rnn_network(model, train, train_batch, valid, num_epochs=5, learning_r
         valid_acc.append(get_accuracy(model, valid))
         print("Epoch %d; Loss %f; Train Acc %f; Val Acc %f" % (
               epoch+1, loss, train_acc[-1], valid_acc[-1]))
+
+        if checkpoint and (epoch + 1) % checkpoint == 0:
+            model.save_model(model.name + f"-{epoch + 1}")
+            
     
     # Plot curves
     plt.title("Loss Training Curve")
@@ -195,6 +205,7 @@ def make_batches(dataset, batch_size, vector_size):
     for i in range(len(dataset)):
         batch.append(dataset[i])
         if batch and len(batch) % batch_size == 0:
+            # Batch max length
             max_length = find_max_length(batch)
 
             tensor_batch = [[0 for i in range(max_length)] for j in range(batch_size)]
@@ -214,8 +225,8 @@ if __name__ == "__main__":
     
     BATCH_SIZE = 128
     GLOVE_SIZE = 100
-    # NUM_CLASSES = 3
-    NUM_CLASSES = 8
+    NUM_CLASSES = 3
+    # NUM_CLASSES = 8
 
     glove = torchtext.vocab.GloVe(name="6B", dim=GLOVE_SIZE, max_vectors=10000)
     f = open("../Data/s140_500tweets.csv", "rt")
@@ -301,12 +312,23 @@ if __name__ == "__main__":
 
     # Training Mode
     elif len(sys.argv) >= 4 and sys.argv[1] == "-t":
-        train_rnn_network(model_gru, train, train_batches, valid, num_epochs=int(sys.argv[2]), learning_rate=float(sys.argv[3]))
-        print("Test Accuracy:", get_accuracy(model_gru, test))
+        
+        epochs = int(sys.argv[2])
+        lrate = float(sys.argv[3])
+        model_name = ""
+        checkpoint_interval = None
 
-        if len(sys.argv) == 5:
-            torch.save(model_gru.state_dict(), "../Models/"+sys.argv[4]+".pth")
-            print("Saved model to ../Models/", sys.argv[4] + ".pth")
+        if len(sys.argv) >= 5:
+            model_name = sys.argv[4]
+        if len(sys.argv) == 6:
+            checkpoint_interval = int(sys.argv[5])
+
+        model_gru.name = model_name
+        train_rnn_network(model_gru, train, train_batches, valid, num_epochs=epochs, learning_rate=lrate, checkpoint=checkpoint_interval)
+        print("Test Accuracy:", get_accuracy(model_gru, test))
+        
+        if not checkpoint_interval:
+            model_gru.save_model(model_name)
 
     # TODO: Interactive mode for word level model
     # # Interactive Mode
@@ -337,6 +359,6 @@ if __name__ == "__main__":
     else:
         print("Bad Usage")
         print("To generate confusion matrix: python3.7 model.py -c epochs learning_rate [csv_save_file]")
-        print("To train a new network: python3.7 model.py -t epochs learning_rate [model_name]")
+        print("To train a new network: python3.7 model.py -t epochs learning_rate [model_name] [check_point_interval]")
         # print("To run interactive mode: python3.7 model.py -i model_name\n")
                 
