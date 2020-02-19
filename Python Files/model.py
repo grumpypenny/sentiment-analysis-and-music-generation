@@ -50,7 +50,6 @@ class SentimentGRU(nn.Module):
         # Convert x to one hot
         ident = torch.eye(self.input_size)
         x = ident[x].cuda()
-
         # Set an initial hidden state
         h0 = torch.zeros(1, x.shape[0], self.hidden_size).cuda()
        
