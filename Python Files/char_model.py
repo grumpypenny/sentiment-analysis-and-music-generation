@@ -160,6 +160,8 @@ if __name__ == "__main__":
 
     BATCH_SIZE = 1024
     NUM_CLASSES = 2
+    EPOCHS = 10
+    LR = 0.005
     # NUM_CLASSES = 8
     
     # set up datafield for messages
@@ -311,6 +313,11 @@ if __name__ == "__main__":
 
         if not checkpoint_interval:
             model_gru.save_model(model_name)
+
+    elif sys.argv[1] == "-u":
+        # default options
+        train_rnn_network(model_gru, train_iter, valid_iter, num_epochs=EPOCHS, learning_rate=LR)
+        print("Test Accuracy:", get_accuracy(model_gru, test_iter))
 
     else:
         print("Bad Usage")
