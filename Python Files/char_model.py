@@ -158,7 +158,7 @@ def get_class_num(emotion):
 
 if __name__ == "__main__":
 
-    BATCH_SIZE = 64
+    BATCH_SIZE = 128
     NUM_CLASSES = 2
     # NUM_CLASSES = 8
     
@@ -238,7 +238,7 @@ if __name__ == "__main__":
                                             repeat=False)                  # repeat the iterator for many epochs
 
 
-    model_gru = SentimentGRU(len(text_field.vocab.stoi), 100, NUM_CLASSES, True)
+    model_gru = SentimentGRU(len(text_field.vocab.stoi), 150, NUM_CLASSES, True)
 
     if 4 <= len(sys.argv) <= 5 and sys.argv[1] == "-c":
         epochs = int(sys.argv[2])
