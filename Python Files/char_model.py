@@ -178,7 +178,7 @@ if __name__ == "__main__":
                                     # preprocessing=lambda x: EMO_TO_CLASS[x])
 
     fields = [('label', label_field), ('tweet', text_field)]
-    dataset = torchtext.data.TabularDataset("../Data/s140_2000tweets.csv", # name of the file
+    dataset = torchtext.data.TabularDataset("../Data/s140_alltweets.csv", # name of the file
                                             "csv",               # fields are separated by a tab
                                             fields)
 

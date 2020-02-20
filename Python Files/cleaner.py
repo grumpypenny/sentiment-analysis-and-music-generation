@@ -75,8 +75,8 @@ class DataCleaner:
             for point in data:
                 wrtr.writerow(point)
                 i += 1
-                if i % 2000 == 0:
-                    break
+                # if i % 2000 == 0:
+                #     break
 
 
             print(f"Extracted {i} data points.")
@@ -86,4 +86,4 @@ class DataCleaner:
 if __name__ == '__main__':
     
     DataCleaner.generate_clean_dataset("../Data/training.1600000.processed.noemoticon.csv",
-     "../Data/s140_2000tweets.csv")
+     "../Data/s140_alltweets.csv")

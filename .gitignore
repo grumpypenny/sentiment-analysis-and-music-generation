@@ -133,6 +133,7 @@ dmypy.json
 
 # Ignore Sentiment 140 Mother dataset
 training.1600000.processed.noemoticon.csv
-
+# Ignore the processed data
+s140_alltweets.csv
 # Ignore model files
 Models/*.pth
