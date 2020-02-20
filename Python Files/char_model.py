@@ -158,7 +158,7 @@ def get_class_num(emotion):
 
 if __name__ == "__main__":
 
-    BATCH_SIZE = 128
+    BATCH_SIZE = 1024
     NUM_CLASSES = 2
     # NUM_CLASSES = 8
     
