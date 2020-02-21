@@ -41,12 +41,12 @@ class SentimentGRU(nn.Module):
         self.rnn = nn.GRU(input_size, hidden_size, batch_first=True, bidirectional=bi).cuda()
         
         factor = int(2 + (int(bi) * 2))
-        self.fcX = nn.Linear(hidden_size*factor, 200).cuda()
-        self.fc1 = nn.Linear(200, 70).cuda()
-        self.fc2 = nn.Linear(70, 10).cuda()
-        self.fc3 = nn.Linear(10, num_classes).cuda()
+        # self.fcX = nn.Linear(hidden_size*factor, 200).cuda()
+        # self.fc1 = nn.Linear(200, 70).cuda()
+        # self.fc2 = nn.Linear(70, 10).cuda()
+        # self.fc3 = nn.Linear(10, num_classes).cuda()
 
-        # self.fcX = nn.Linear(hidden_size*2, num_classes).cuda()
+        self.fc = nn.Linear(hidden_size*factor, num_classes).cuda()
     
     def forward(self, x):
         # Convert x to one hot
@@ -63,10 +63,13 @@ class SentimentGRU(nn.Module):
         out = torch.cat([torch.max(out, dim=1)[0], 
                         torch.mean(out, dim=1)], dim=1).cuda() 
        
-        out = self.fcX(out).cuda()
-        out = self.fc1(F.relu(out).cuda()).cuda()
-        out = self.fc2(F.relu(out).cuda()).cuda()
-        out = self.fc3(F.relu(out).cuda()).cuda()
+        # out = self.fcX(out).cuda()
+        # out = self.fc1(F.relu(out).cuda()).cuda()
+        # out = self.fc2(F.relu(out).cuda()).cuda()
+        # out = self.fc3(F.relu(out).cuda()).cuda()
+
+        out = self.fc(out).cuda()
+
         return out
 
     def save_model(self, name):
@@ -161,7 +164,7 @@ if __name__ == "__main__":
     BATCH_SIZE = 1024
     NUM_CLASSES = 2
     EPOCHS = 10
-    LR = 0.005
+    LR = 0.001
     # NUM_CLASSES = 8
     
     # set up datafield for messages
