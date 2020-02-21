@@ -319,7 +319,8 @@ if __name__ == "__main__":
 
     elif sys.argv[1] == "-u":
         # default options
-        train_rnn_network(model_gru, train_iter, valid_iter, num_epochs=EPOCHS, learning_rate=LR)
+        model_gru.name = "GRU_LR_0.001_E30"
+        train_rnn_network(model_gru, train_iter, valid_iter, num_epochs=EPOCHS, learning_rate=LR, checkpoint=2)
         print("Test Accuracy:", get_accuracy(model_gru, test_iter))
 
     else:
