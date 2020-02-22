@@ -8,6 +8,12 @@ DATA_BUNDLER = {'0' : "negative",
                 '2' : "neutral",
                 '4' : "positive"}
 
+CROWD_DATA = {"surprise" : "happy", "enthusiasm" : "happy", "fun" : "happy", "happiness" : "happy", "love" : "happy",  # positive valence positive arousal
+              "hate" : "anger", "anger" : "anger", 
+              "worry" : "sad", "sadness" : "sad", "empty" : "sad", "boredom" : "sad",
+              "relief" : "relief",
+              "neutral" : "neutral"}
+
 # PATH_TO_DATA: "D:\School\_ML_project\sentiment\sentiment140"
 
 class DataCleaner:
@@ -24,10 +30,15 @@ class DataCleaner:
             line_count = 0
     
             for row in csv_reader:
-        
-                emotion = row[0]
-                tweet = row[5]
                 
+                # FOR S140
+                # emotion = row[0]
+                # tweet = row[5]
+            
+                # FOR CROWDFLOWER
+                emotion = row[1]
+                tweet = row[3]
+
                 # make all lower case
                 tweet = tweet.lower()
 
@@ -53,11 +64,11 @@ class DataCleaner:
 
                 ## Make All Lowercase? ##
 
-                if emotion != "sentiment" and emotion != "boredom":
-                    if DATA_BUNDLER[emotion] not in emotions:
-                        emotions[DATA_BUNDLER[emotion]] = 0
-                    emotions[DATA_BUNDLER[emotion]] += 1
-                    data.append([DATA_BUNDLER[emotion], tweet])
+                if emotion != "sentiment":
+                    if CROWD_DATA[emotion] not in emotions:
+                        emotions[CROWD_DATA[emotion]] = 0
+                    emotions[CROWD_DATA[emotion]] += 1
+                    data.append([CROWD_DATA[emotion], tweet])
 
                 line_count += 1
 
@@ -85,5 +96,5 @@ class DataCleaner:
 
 if __name__ == '__main__':
     
-    DataCleaner.generate_clean_dataset("../Data/training.1600000.processed.noemoticon.csv",
-     "../Data/s140_alltweets.csv")
+    DataCleaner.generate_clean_dataset("../Data/text_emotion.csv",
+     "../Data/cf_formatted.csv")

@@ -21,10 +21,11 @@ EMO_TO_CLASS = {"excited" : 0,
                 "happy" : 6,
                 "neutral" : 7}
 
-# S_140_KEY= {"negative": 0,
-#             "neutral": 1,
-#             "positive": 2}
-
+CF_KEY = {"sad" : 0,
+          "happy" : 1,
+          "neutral" : 2,
+          "anger" : 3,
+          "relief" : 4}
 
 S_140_KEY= {"negative": 0,
             "positive": 1}
@@ -161,10 +162,11 @@ def get_class_num(emotion):
 
 if __name__ == "__main__":
 
-    BATCH_SIZE = 1024
-    NUM_CLASSES = 2
-    EPOCHS = 10
-    LR = 0.001
+    BATCH_SIZE = 64
+    NUM_CLASSES = 5
+    EPOCHS = 15
+    LR = 0.005
+    HIDDEN_SIZE = 25
     # NUM_CLASSES = 8
     
     # set up datafield for messages
@@ -179,11 +181,11 @@ if __name__ == "__main__":
                                     use_vocab=False,     # don't need to track vocabulary
                                     is_target=True,      
                                     batch_first=True,
-                                    preprocessing=lambda x: S_140_KEY[x]) # convert text to 0 and 1
+                                    preprocessing=lambda x: CF_KEY[x]) # convert text to 0 and 1
                                     # preprocessing=lambda x: EMO_TO_CLASS[x])
 
     fields = [('label', label_field), ('tweet', text_field)]
-    dataset = torchtext.data.TabularDataset("../Data/s140_alltweets.csv", # name of the file
+    dataset = torchtext.data.TabularDataset("../Data/cf_formatted.csv", # name of the file
                                             "csv",               # fields are separated by a tab
                                             fields)
 
@@ -191,11 +193,27 @@ if __name__ == "__main__":
     train, valid, test = dataset.split([0.6, 0.2, 0.2])
 
     # # Use only for crowd flower
-    # excited = []
-    # angry = []
-    # relief = []
-    # love = []
-    # happy = []
+    sad = []
+    happy = []
+    neutral = []
+    anger = []
+    relief = []
+
+    for item in train.examples:
+        label = item.label
+        if label == 0:
+            sad.append(item)
+        elif label == 1:
+            happy.append(item)
+        elif label == 2:
+            neutral.append(item)
+        elif label == 3:
+            anger.append(item)
+        elif label == 4:
+            relief.append(item)
+
+    train.examples = train.examples + anger * 10
+    train.examples = train.examples + relief * 9
 
     # for item in train.examples:
     #     label = item.label
@@ -243,7 +261,7 @@ if __name__ == "__main__":
                                             repeat=False)                  # repeat the iterator for many epochs
 
 
-    model_gru = SentimentGRU(len(text_field.vocab.stoi), 150, NUM_CLASSES, True)
+    model_gru = SentimentGRU(len(text_field.vocab.stoi), HIDDEN_SIZE, NUM_CLASSES, True)
 
     if 4 <= len(sys.argv) <= 5 and sys.argv[1] == "-c":
         epochs = int(sys.argv[2])
@@ -319,8 +337,7 @@ if __name__ == "__main__":
 
     elif sys.argv[1] == "-u":
         # default options
-        model_gru.name = "GRU_LR_0.001_E30"
-        train_rnn_network(model_gru, train_iter, valid_iter, num_epochs=EPOCHS, learning_rate=LR, checkpoint=2)
+        train_rnn_network(model_gru, train_iter, valid_iter, num_epochs=EPOCHS, learning_rate=LR)
         print("Test Accuracy:", get_accuracy(model_gru, test_iter))
 
     else:
