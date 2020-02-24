@@ -4,25 +4,24 @@ import re
 import sys
 import random
 
-DATA_BUNDLER = {'0' : "negative",
-                '2' : "neutral",
-                '4' : "positive"}
+S140 = [{'0' : "negative",
+         '2' : "neutral",
+         '4' : "positive"}, (0, 5)]
 
-CROWD_DATA = {"surprise" : "happy", "enthusiasm" : "happy", "fun" : "happy", "happiness" : "happy", "love" : "happy",  # positive valence positive arousal
-              "hate" : "anger", "anger" : "anger", 
-              "worry" : "sad", "sadness" : "sad", "empty" : "sad", "boredom" : "sad",
-              "relief" : "relief",
-              "neutral" : "neutral"}
-
-# PATH_TO_DATA: "D:\School\_ML_project\sentiment\sentiment140"
+CROWD = [{"surprise" : "happy", "enthusiasm" : "happy", "fun" : "happy", "happiness" : "happy", "love" : "happy",  # positive valence positive arousal
+          "hate" : "anger", "anger" : "anger", 
+          "worry" : "sad", "sadness" : "sad", "empty" : "sad", "boredom" : "sad",
+          "relief" : "relief",
+          "neutral" : "neutral"}, (1, 3)]
 
 class DataCleaner:
 
     @staticmethod
-    def generate_clean_dataset(path_load, path_save):
+    def generate_clean_dataset(path_load, path_save, n):
         
         data = [] 
         emotions = {}
+        key, data_index = S140
 
         with open(path_load, mode='r') as csv_data:
 
@@ -31,15 +30,10 @@ class DataCleaner:
     
             for row in csv_reader:
                 
-                # FOR S140
-                # emotion = row[0]
-                # tweet = row[5]
-            
-                # FOR CROWDFLOWER
-                emotion = row[1]
-                tweet = row[3]
+                emotion = row[data_index[0]]
+                tweet = row[data_index[1]]
 
-                # make all lower case
+                # make all lower case?
                 tweet = tweet.lower()
 
                 # Remove tabs and spaces and replace with one space
@@ -60,20 +54,14 @@ class DataCleaner:
 
                     if not tweet:
                         continue
-                    # print(f"NEW: {tweet}\n")
-
-                ## Make All Lowercase? ##
 
                 if emotion != "sentiment":
-                    if CROWD_DATA[emotion] not in emotions:
-                        emotions[CROWD_DATA[emotion]] = 0
-                    emotions[CROWD_DATA[emotion]] += 1
-                    data.append([CROWD_DATA[emotion], tweet])
+                    if key[emotion] not in emotions:
+                        emotions[key[emotion]] = 0
+                    emotions[key[emotion]] += 1
+                    data.append([key[emotion], tweet])
 
                 line_count += 1
-
-                # if line_count % 2000 == 0:
-                    # break
 
             print(emotions, len(emotions))
             print(f"Processed {len(data)} data points.")
@@ -86,15 +74,16 @@ class DataCleaner:
             for point in data:
                 wrtr.writerow(point)
                 i += 1
-                # if i % 2000 == 0:
-                #     break
+                if i == n:
+                    break
 
-
-            print(f"Extracted {i} data points.")
-
+            print(f"Wrote {i} data points.")
 
 
 if __name__ == '__main__':
     
-    DataCleaner.generate_clean_dataset("../Data/text_emotion.csv",
-     "../Data/cf_formatted.csv")
+    load_name = sys.argv[1]
+    save_name = sys.argv[2]
+    n = int(sys.argv[3])
+    DataCleaner.generate_clean_dataset(f"../Data/{load_name}.csv",
+     f"../Data/{save_name}.csv", n)
