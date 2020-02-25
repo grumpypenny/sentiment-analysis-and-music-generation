@@ -162,11 +162,11 @@ def get_class_num(emotion):
 
 if __name__ == "__main__":
 
-    BATCH_SIZE = 64
+    BATCH_SIZE = 128
     NUM_CLASSES = 5
-    EPOCHS = 15
-    LR = 0.005
-    HIDDEN_SIZE = 25
+    EPOCHS = 10
+    LR = 0.004
+    HIDDEN_SIZE = 100
     # NUM_CLASSES = 8
     
     # set up datafield for messages
