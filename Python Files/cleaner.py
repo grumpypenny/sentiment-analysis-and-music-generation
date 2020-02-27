@@ -27,7 +27,7 @@ class DataCleaner:
 
         data = [] 
         emotions = {}
-        key, data_index = S140
+        key, data_index = CROWD
 
         with open(path_load, mode='r') as csv_data:
 
@@ -61,7 +61,7 @@ class DataCleaner:
                     if not tweet:
                         continue
 
-                if emotion != "sentiment":
+                if emotion != "sentiment" and emotion != "neutral":
                     if key[emotion] not in emotions:
                         emotions[key[emotion]] = 0
                     emotions[key[emotion]] += 1
