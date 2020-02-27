@@ -14,11 +14,17 @@ CROWD = [{"surprise" : "happy", "enthusiasm" : "happy", "fun" : "happy", "happin
           "relief" : "relief",
           "neutral" : "neutral"}, (1, 3)]
 
+SHUFFLE_COUNT = 10
+
 class DataCleaner:
 
     @staticmethod
-    def generate_clean_dataset(path_load, path_save, n):
+    def generate_clean_dataset(path_load, path_save, n, train_split, val_split, test_split):
         
+        if (train_split + val_split + test_split) != 1:
+            print("The split does not sum to 1.")
+            return
+
         data = [] 
         emotions = {}
         key, data_index = S140
@@ -66,18 +72,43 @@ class DataCleaner:
             print(emotions, len(emotions))
             print(f"Processed {len(data)} data points.")
 
-            random.shuffle(data)
+            for s in range(SHUFFLE_COUNT):
+                random.shuffle(data)
 
-        with open(path_save, "w", encoding='utf-8', newline='') as new:
+            data_to_write = data[0:n]
+
+            k = len(data_to_write)
+            train_n = int(train_split * k)
+            valid_n = int(val_split * k)
+            test_n = int(test_split * k)
+
+            train = data_to_write[:train_n]
+            valid = data_to_write[train_n:(train_n+valid_n)]
+            test = data_to_write[(train_n+valid_n):(train_n+valid_n+test_n)]
+
+        # Save train set
+        with open(path_save+"-train.csv", "w", encoding='utf-8', newline='') as new:
             wrtr = csv.writer(new)
-            i = 0
-            for point in data:
+            for point in train:
                 wrtr.writerow(point)
-                i += 1
-                if i == n:
-                    break
 
-            print(f"Wrote {i} data points.")
+            print(f"Wrote {len(train)} data points to {path_save}-train.csv.")
+
+        # Save validation set
+        with open(path_save+"-validation.csv", "w", encoding='utf-8', newline='') as new:
+            wrtr = csv.writer(new)
+            for point in valid:
+                wrtr.writerow(point)
+
+            print(f"Wrote {len(valid)} data points to {path_save}-validation.csv.")
+
+        # Save test set
+        with open(path_save+"-test.csv", "w", encoding='utf-8', newline='') as new:
+            wrtr = csv.writer(new)
+            for point in test:
+                wrtr.writerow(point)
+
+            print(f"Wrote {len(test)} data points to {path_save}-test.csv.")
 
 
 if __name__ == '__main__':
@@ -85,5 +116,8 @@ if __name__ == '__main__':
     load_name = sys.argv[1]
     save_name = sys.argv[2]
     n = int(sys.argv[3])
-    DataCleaner.generate_clean_dataset(f"../Data/{load_name}.csv",
-     f"../Data/{save_name}.csv", n)
+
+    train, validation, test = float(sys.argv[4]), float(sys.argv[5]), float(sys.argv[6])
+
+    DataCleaner.generate_clean_dataset(f"../Data/{load_name}.csv", f"../Data/{save_name}", \
+                                        n, train, validation, test)
