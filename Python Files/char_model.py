@@ -23,9 +23,9 @@ EMO_TO_CLASS = {"excited" : 0,
 
 CF_KEY = {"sad" : 0,
           "happy" : 1,
-          "neutral" : 2,
-          "anger" : 3,
-          "relief" : 4}
+        #   "neutral" : 2,
+          "anger" : 2,
+          "relief" : 3}
 
 S_140_KEY= {"negative": 0,
             "positive": 1}
@@ -185,7 +185,7 @@ if __name__ == "__main__":
                                     # preprocessing=lambda x: EMO_TO_CLASS[x])
 
     fields = [('label', label_field), ('tweet', text_field)]
-    dataset = torchtext.data.TabularDataset("../Data/cf_formatted.csv", # name of the file
+    dataset = torchtext.data.TabularDataset("../Data/only4.csv", # name of the file
                                             "csv",               # fields are separated by a tab
                                             fields)
 
@@ -206,14 +206,14 @@ if __name__ == "__main__":
         elif label == 1:
             happy.append(item)
         elif label == 2:
-            neutral.append(item)
-        elif label == 3:
             anger.append(item)
-        elif label == 4:
+        elif label == 3:
             relief.append(item)
 
     train.examples = train.examples + anger * 10
     train.examples = train.examples + relief * 9
+
+    print(f"sad = {len(sad)}, happy = {len(happy)}, anger = {len(anger)}, relief = {len(relief)}")
 
     # for item in train.examples:
     #     label = item.label
@@ -295,7 +295,7 @@ if __name__ == "__main__":
             print(row)
 
         if csv_name:
-            with open(f"../../Sentiment Analysis Model Report/{csv_name}.csv", "w+", encoding='utf-8', newline='') as new_data:
+            with open(f"../Confusion Matrices/{csv_name}.csv", "w+", encoding='utf-8', newline='') as new_data:
 
                 writer = csv.writer(new_data)
                 # header = [""] + list(range(NUM_CLASSES))
