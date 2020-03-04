@@ -32,22 +32,22 @@ S_140_KEY= {"negative": 0,
 
 
 class SentimentGRU(nn.Module):
-    def __init__(self, input_size, hidden_size, num_classes, bi=False):
+    def __init__(self, input_size, hidden_size, num_classes, bi=False, layers=1):
         super(SentimentGRU, self).__init__()
 
         self.name = ""
 
         self.hidden_size = hidden_size
         self.input_size = input_size
-        self.rnn = nn.GRU(input_size, hidden_size, batch_first=True, bidirectional=bi).cuda()
+        self.rnn = nn.GRU(input_size, hidden_size, batch_first=True, bidirectional=bi, num_layers=layers).cuda()
         
         factor = int(2 + (int(bi) * 2))
-        # self.fcX = nn.Linear(hidden_size*factor, 200).cuda()
-        # self.fc1 = nn.Linear(200, 70).cuda()
-        # self.fc2 = nn.Linear(70, 10).cuda()
-        # self.fc3 = nn.Linear(10, num_classes).cuda()
+        self.fcX = nn.Linear(hidden_size*factor, 200).cuda()
+        self.fc1 = nn.Linear(200, 70).cuda()
+        self.fc2 = nn.Linear(70, 10).cuda()
+        self.fc3 = nn.Linear(10, num_classes).cuda()
 
-        self.fc = nn.Linear(hidden_size*factor, num_classes).cuda()
+        # self.fc = nn.Linear(hidden_size*factor, num_classes).cuda()
     
     def forward(self, x):
         # Convert x to one hot
@@ -55,21 +55,21 @@ class SentimentGRU(nn.Module):
         x = ident[x].cuda()
 
         # Set an initial hidden state
-        h0 = torch.zeros(1, x.shape[0], self.hidden_size).cuda()
+        h0 = torch.zeros(2, x.shape[0], self.hidden_size).cuda()
        
         # Forward propagate the GRU 
-        out, _ = self.rnn(x)
+        out, _ = self.rnn(x, h0)
 
         # Get the max and mean vector and concatenate them        
         out = torch.cat([torch.max(out, dim=1)[0], 
                         torch.mean(out, dim=1)], dim=1).cuda() 
        
-        # out = self.fcX(out).cuda()
-        # out = self.fc1(F.relu(out).cuda()).cuda()
-        # out = self.fc2(F.relu(out).cuda()).cuda()
-        # out = self.fc3(F.relu(out).cuda()).cuda()
+        out = self.fcX(out).cuda()
+        out = self.fc1(F.relu(out).cuda()).cuda()
+        out = self.fc2(F.relu(out).cuda()).cuda()
+        out = self.fc3(F.relu(out).cuda()).cuda()
 
-        out = self.fc(out).cuda()
+        # out = self.fc(out).cuda()
 
         return out
 
@@ -94,7 +94,7 @@ def train_rnn_network(model, train, valid, num_epochs=5, learning_rate=1e-5, che
             loss = criterion(pred.cuda(), labels.cuda())
             loss.backward()
             optimizer.step()
-        losses.append(float(loss))
+        losses.append(loss.item())
 
         epochs.append(epoch)
         train_acc.append(get_accuracy(model, train))
@@ -162,8 +162,8 @@ def get_class_num(emotion):
 
 if __name__ == "__main__":
 
-    BATCH_SIZE = 128
-    NUM_CLASSES = 5
+    BATCH_SIZE = 1024
+    NUM_CLASSES = 2
     EPOCHS = 10
     LR = 0.004
     HIDDEN_SIZE = 100
@@ -181,11 +181,11 @@ if __name__ == "__main__":
                                     use_vocab=False,     # don't need to track vocabulary
                                     is_target=True,      
                                     batch_first=True,
-                                    preprocessing=lambda x: CF_KEY[x]) # convert text to 0 and 1
+                                    preprocessing=lambda x: S_140_KEY[x]) # convert text to 0 and 1
                                     # preprocessing=lambda x: EMO_TO_CLASS[x])
 
     fields = [('label', label_field), ('tweet', text_field)]
-    dataset = torchtext.data.TabularDataset("../Data/only4.csv", # name of the file
+    dataset = torchtext.data.TabularDataset("../Data/s140_alltweets.csv", # name of the file
                                             "csv",               # fields are separated by a tab
                                             fields)
 
@@ -195,9 +195,6 @@ if __name__ == "__main__":
     # # Use only for crowd flower
     sad = []
     happy = []
-    neutral = []
-    anger = []
-    relief = []
 
     for item in train.examples:
         label = item.label
@@ -205,15 +202,8 @@ if __name__ == "__main__":
             sad.append(item)
         elif label == 1:
             happy.append(item)
-        elif label == 2:
-            anger.append(item)
-        elif label == 3:
-            relief.append(item)
 
-    train.examples = train.examples + anger * 10
-    train.examples = train.examples + relief * 9
-
-    print(f"sad = {len(sad)}, happy = {len(happy)}, anger = {len(anger)}, relief = {len(relief)}")
+    print(f"sad = {len(sad)}, happy = {len(happy)}")
 
     # for item in train.examples:
     #     label = item.label
