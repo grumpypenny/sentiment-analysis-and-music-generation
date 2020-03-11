@@ -1,0 +1,8 @@
+To Create .abc:
+
+py gen.py -literaly_anything > file_name.abc
+
+To Create .mid from .abc:
+** Don't forget to recompile with make
+
+./abcmidi/abc2midi.exe file_name.abc -o output_file.mid
