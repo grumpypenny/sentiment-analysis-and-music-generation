@@ -5,6 +5,8 @@ import torchtext
 import csv
 import matplotlib.pyplot as plt
 
+import sys
+
 class Generator(nn.Module):
     """
     NETWORK: GRU -> fully connected
@@ -60,7 +62,7 @@ class Vocabulary():
         self.vocab_itos = text_field.vocab.itos # so we don't have to rewrite sample_sequence
         self.vocab_size = len(text_field.vocab.itos)
 
-        print("vocab size: ", self.vocab_size)
+        # print("vocab size: ", self.vocab_size)
 
 def sample_sequence(model, vocab, max_len=100, temperature=0.5):
     """
@@ -133,19 +135,23 @@ def train(model, data, vocab, batch_size=8, num_epochs=1, lr=0.001, print_every=
 
             avg_loss += loss.item()
             iteration += 1 # increment iteration count
-            if iteration % print_every == 0:
+            if iteration % print_every == 0 and len(sys.argv) == 1:
                 print("[Iter %d] Loss %f" % (iteration, float(avg_loss/print_every)))
                 loss_data.append(avg_loss/print_every)
                 # print("    " + sample_sequence(model, 140, 0.8))
                 avg_loss = 0
-        print("[Finished %d Epochs]" % (e + 1))
+                
+        if len(sys.argv) == 1:
+            print("[Finished %d Epochs]" % (e + 1))
 
 
-    plt.title("Loss Training Curve")
-    plt.plot(loss_data, label="Train Loss")
-    plt.xlabel("Epoch")
-    plt.ylabel("Loss")
-    plt.show() 
+
+    if len(sys.argv) == 1:
+        plt.title("Loss Training Curve")
+        plt.plot(loss_data, label="Train Loss")
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss")
+        plt.show() 
 
 if __name__ == "__main__":
     
@@ -157,6 +163,6 @@ if __name__ == "__main__":
 
     model = Generator(vocab_size, 64)
 
-    train(model, abc, v,  batch_size=32, num_epochs=10, lr=0.005, print_every=100)
+    train(model, abc, v,  batch_size=32, num_epochs=50, lr=0.005, print_every=100)
 
-    print(sample_sequence(model, v, max_len=100, temperature=0.2))
+    print(sample_sequence(model, v, max_len=500, temperature=0.4))
