@@ -137,3 +137,7 @@ training.1600000.processed.noemoticon.csv
 s140_alltweets.csv
 # Ignore model files
 Models/*.pth
+
+# Ignore ABC library
+ABC-generation/abcmidi/*.exe
+ABC-generation/abcmidi/*.o
