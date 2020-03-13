@@ -76,8 +76,13 @@ def sample_sequence(model, vocab, max_len=100, temperature=0.5):
     hidden = None
     for p in range(max_len):
         output, hidden = model(inp.unsqueeze(0), hidden)
+
+        # increase output to avoid 0 prob 
+        output += 0.0001
         # Sample from the network as a multinomial distribution
+        # print("output =",output)
         output_dist = output.data.view(-1).div(temperature).exp()
+        # print("dist =", output_dist)
         top_i = int(torch.multinomial(output_dist, 1)[0])
         # Add predicted character to string and use as next input
         predicted_char = vocab.vocab_itos[top_i]
@@ -114,13 +119,14 @@ def train(model, data, vocab, batch_size=8, num_epochs=1, lr=0.001, print_every=
     data_iter = torchtext.data.BucketIterator(data,
                                               batch_size=batch_size,
                                               sort_key=lambda x: len(x.text),
+                                              shuffle=True,
                                               sort_within_batch=True)
 
     loss_data = []
+    avg_loss = 0
 
     for e in range(num_epochs):
         # get training set
-        avg_loss = 0
         for (tweet, lengths), label in data_iter:
             target = tweet[:, 1:] # the tweet from index 1 to end
             inp = tweet[:, :-1] # the entire tweet
@@ -163,6 +169,6 @@ if __name__ == "__main__":
 
     model = Generator(vocab_size, 64)
 
-    train(model, abc, v,  batch_size=32, num_epochs=200, lr=0.005, print_every=100)
+    train(model, abc, v,  batch_size=32, num_epochs=50, lr=0.005, print_every=50)
 
     print(sample_sequence(model, v, max_len=500, temperature=0.4))
