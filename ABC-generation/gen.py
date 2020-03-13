@@ -163,6 +163,6 @@ if __name__ == "__main__":
 
     model = Generator(vocab_size, 64)
 
-    train(model, abc, v,  batch_size=32, num_epochs=50, lr=0.005, print_every=100)
+    train(model, abc, v,  batch_size=32, num_epochs=200, lr=0.005, print_every=100)
 
     print(sample_sequence(model, v, max_len=500, temperature=0.4))

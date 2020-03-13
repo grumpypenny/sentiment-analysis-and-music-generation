@@ -7,15 +7,15 @@ def get_data():
     # for file in glob.glob("./ABC_cleaned/*.abc"):
     all_files = []
 
-    start = re.compile("^X:\s\d+")
+    start = re.compile("^X:(\s)?\d+")
 
 
-    for file in os.listdir( os.fsencode("./ABC_cleaned/")):
+    for file in os.listdir( os.fsencode("./campin/")):
         fname = os.fsdecode(file)
         if fname.endswith(".abc"):
             tunes = [] # will be a list of lists
 
-            with open("./ABC_cleaned/"+fname, "r", encoding='utf-8', newline="") as f:
+            with open("./campin/"+fname, "r", encoding='utf-8', newline="") as f:
                 # store all the tunes into a list
                 tune = []
                 for line in f.readlines():
@@ -69,7 +69,7 @@ def make_csv(string_list):
     with col 1 being the number of the tune
     col 2 being the tune
     """
-    with open("data.csv", "w", encoding="utf-8", newline="") as file:
+    with open("campin.csv", "w", encoding="utf-8", newline="") as file:
         writer = csv.writer(file)
 
         for i, s in enumerate(string_list):
