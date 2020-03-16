@@ -9,23 +9,32 @@ def get_data():
 
     start = re.compile("^X:(\s)?\d+")
 
+    path = "D:/School/_ML_project/abc/Tune-a-day"
 
-    for file in os.listdir( os.fsencode("./campin/")):
+    encoding = 'utf-8'
+
+    for file in os.listdir( os.fsencode(path)):
         fname = os.fsdecode(file)
+        print(fname)
         if fname.endswith(".abc"):
             tunes = [] # will be a list of lists
 
-            with open("./campin/"+fname, "r", encoding='utf-8', newline="") as f:
+            with open(path+'/'+fname, "r", encoding=encoding, newline="", errors='ignore') as f:
                 # store all the tunes into a list
+                should_append = False
                 tune = []
                 for line in f.readlines():
+                    # remove any non utf-8 characters
+                    line = bytes(line, encoding).decode(encoding, 'ignore')
                     # line is 'X: dd'
                     if start.match(line):
+                        should_append = True
                         # finish with the old group
                         # start a new one
                         tunes.append(tune)
                         tune = []
-                    tune.append(line)
+                    if should_append:
+                        tune.append(line)
                 # add the last one
                 tunes.append(tune)
             
@@ -66,10 +75,8 @@ def make_csv(string_list):
     """ 
     Take in a list of strings reprsenting a tune
     Then put it in a csv
-    with col 1 being the number of the tune
-    col 2 being the tune
     """
-    with open("campin.csv", "w", encoding="utf-8", newline="") as file:
+    with open("tunes.csv", "w", encoding="utf-8", newline="") as file:
         writer = csv.writer(file)
 
         for i, s in enumerate(string_list):
