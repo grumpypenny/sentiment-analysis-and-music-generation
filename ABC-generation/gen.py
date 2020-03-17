@@ -91,8 +91,12 @@ def sample_sequence(model, vocab, max_len=100, temperature=0.5):
             break
         generated_sequence += predicted_char       
         inp = torch.Tensor([top_i]).long()
-    return generated_sequence
 
+    with open(f'{sys.argv[3]}.abc', 'w') as writer:
+        writer.write(generated_sequence)
+
+    print(generated_sequence)
+    
 def get_data():
     """
     Get the cleaned abc's and return:
@@ -111,10 +115,27 @@ def get_data():
 
     return abc, text_field
 
-def train(model, data, vocab, batch_size=8, num_epochs=1, lr=0.001, print_every=100):
+def train_model(data, vocab, batch_size=8, num_epochs=1, lr=0.001, print_every=100, check_point_interval=1):
+    
+    model = Generator(v.vocab_size, 64)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     criterion = nn.CrossEntropyLoss()
     iteration = 0
+    loss_data = []
+    avg_loss = 0
+    curr_epochs = 0
+
+    if sys.argv[1] != "-n":
+        saved_dictionary = torch.load(f"saved_models/{sys.argv[1]}.pth")
+        model.load_state_dict(saved_dictionary['model_state_dict'])
+        optimizer.load_state_dict(saved_dictionary['optimizer_state_dict'])
+        curr_epochs = saved_dictionary['epoch']
+        loss = saved_dictionary['loss']
+        loss_data = [loss.item()]
+        avg_loss = loss.item()
+        iteration = saved_dictionary['iteration']
+        model.train()
+        print(f"Resuming Training at Epoch-{curr_epochs}")
     
     data_iter = torchtext.data.BucketIterator(data,
                                               batch_size=batch_size,
@@ -122,14 +143,11 @@ def train(model, data, vocab, batch_size=8, num_epochs=1, lr=0.001, print_every=
                                               shuffle=True,
                                               sort_within_batch=True)
 
-    loss_data = []
-    avg_loss = 0
-
-    for e in range(num_epochs):
+    for e in range(curr_epochs, curr_epochs + num_epochs):
         # get training set
-        for (tweet, lengths), label in data_iter:
-            target = tweet[:, 1:] # the tweet from index 1 to end
-            inp = tweet[:, :-1] # the entire tweet
+        for (sequence, lengths), label in data_iter:
+            target = sequence[:, 1:] # the tweet from index 1 to end
+            inp = sequence[:, :-1] # the entire tweet
             # cleanup
             optimizer.zero_grad()
             # forward pass
@@ -141,34 +159,46 @@ def train(model, data, vocab, batch_size=8, num_epochs=1, lr=0.001, print_every=
 
             avg_loss += loss.item()
             iteration += 1 # increment iteration count
-            if iteration % print_every == 0 and len(sys.argv) == 1:
+            if iteration % print_every == 0:
                 print("[Iter %d] Loss %f" % (iteration, float(avg_loss/print_every)))
                 loss_data.append(avg_loss/print_every)
                 # print("    " + sample_sequence(model, 140, 0.8))
                 avg_loss = 0
                 
-        if len(sys.argv) == 1:
-            print("[Finished %d Epochs]" % (e + 1))
+        print("[Finished %d Epochs]" % (e + 1))
+
+        if (e + 1) % check_point_interval == 0:
+            # Save model
+            torch.save({
+            'epoch': e+1,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'loss': loss,
+            'iteration' : iteration
+            }, f"saved_models/{sys.argv[2]}-{e+1}.pth")
+            print(f"Checkpoint[{e+1}]: Saved model to saved_models/{sys.argv[2]}-{e+1}.pth")
 
 
+    plt.title("Loss Training Curve")
+    plt.plot(loss_data, label="Train Loss")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.show() 
 
-    if len(sys.argv) == 1:
-        plt.title("Loss Training Curve")
-        plt.plot(loss_data, label="Train Loss")
-        plt.xlabel("Epoch")
-        plt.ylabel("Loss")
-        plt.show() 
+    return model
 
 if __name__ == "__main__":
     
+    if len(sys.argv) != 4:
+        print("Usage: py gen.py load_name save_name abc_file_name")
+        print("Let load_name = -n if training new model from scratch")
+        exit(0)
+
     abc, text_field = get_data()
     v = Vocabulary(abc, text_field)
     vocab_stoi = v.vocab_stoi
     vocab_itos = v.vocab_itos
-    vocab_size = v.vocab_size
 
-    model = Generator(vocab_size, 64)
+    model = train_model(abc, v,  batch_size=32, num_epochs=10, lr=0.005, print_every=50, check_point_interval=1)
 
-    train(model, abc, v,  batch_size=32, num_epochs=50, lr=0.005, print_every=50)
-
-    print(sample_sequence(model, v, max_len=500, temperature=0.4))
+    sample_sequence(model, v, max_len=500, temperature=0.4)
