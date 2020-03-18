@@ -14,20 +14,22 @@ CROWD = [{"surprise" : "happy", "enthusiasm" : "happy", "fun" : "happy", "happin
           "relief" : "relief",
           "neutral" : "neutral"}, (1, 3)]
 
-SHUFFLE_COUNT = 10
+SHUFFLE_COUNT = 10 # Increase if paranoid about bad splits
 
 class DataCleaner:
 
     @staticmethod
     def generate_clean_dataset(path_load, path_save, n, train_split, val_split, test_split):
         
+        print("Starting data cleaning process...")
+
         if (train_split + val_split + test_split) != 1:
             print("The split does not sum to 1.")
             return
 
         data = [] 
         emotions = {}
-        key, data_index = CROWD
+        key, data_index = S140
 
         with open(path_load, mode='r') as csv_data:
 
@@ -70,12 +72,16 @@ class DataCleaner:
                 line_count += 1
 
             print(emotions, len(emotions))
-            print(f"Processed {len(data)} data points.")
+            print(f"Processed {len(data)} data points in total.")
 
             for s in range(SHUFFLE_COUNT):
                 random.shuffle(data)
 
-            data_to_write = data[0:n]
+            data_to_write = []
+            if n > 0:
+                data_to_write = data[0:n]
+            else:
+                data_to_write = data
 
             k = len(data_to_write)
             train_n = int(train_split * k)
@@ -110,9 +116,16 @@ class DataCleaner:
 
             print(f"Wrote {len(test)} data points to {path_save}-test.csv.")
 
+        print("Done!")
+
 
 if __name__ == '__main__':
     
+    if len(sys.argv) != 7:
+        print("Usage: load_name save_name size train_split val_split test_split")
+        print("Let size = -1 to split entire dataset")
+        exit(0)
+
     load_name = sys.argv[1]
     save_name = sys.argv[2]
     n = int(sys.argv[3])

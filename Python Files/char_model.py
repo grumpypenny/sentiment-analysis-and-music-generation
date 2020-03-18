@@ -35,8 +35,6 @@ class SentimentGRU(nn.Module):
     def __init__(self, input_size, hidden_size, num_classes, bi=False, layers=1):
         super(SentimentGRU, self).__init__()
 
-        self.name = ""
-
         self.hidden_size = hidden_size
         self.input_size = input_size
         self.rnn = nn.GRU(input_size, hidden_size, batch_first=True, bidirectional=bi, num_layers=layers).cuda()
@@ -73,21 +71,29 @@ class SentimentGRU(nn.Module):
 
         return out
 
-    def save_model(self, name):
-        if name:
-            torch.save(self.state_dict(), "../Models/"+name+".pth")
-            print(f"Saved model to ../Models/{name}.pth")
+def train_rnn_network(input_size, hidden_size, num_classes, train, valid, bid=False, num_layers=1, num_epochs=5, learning_rate=1e-5, checkpoint=1):
 
-def train_rnn_network(model, train, valid, num_epochs=5, learning_rate=1e-5, checkpoint=None):
-
-    print(f"Training for {num_epochs} epochs with lr={learning_rate}")
-
-    criterion = nn.CrossEntropyLoss()
+    model = SentimentGRU(input_size, hidden_size, num_classes, bi=bid, layers=num_layers)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     # optimizer = torch.optim.RMSprop(model.parameters(), lr=learning_rate)
+    criterion = nn.CrossEntropyLoss()
     losses, train_acc, valid_acc = [], [], []
+    curr_epochs = 0
     epochs = []
-    for epoch in range(num_epochs):
+
+    if sys.argv[1] != "-n":
+        saved_dictionary = torch.load(f"../Models/{sys.argv[1]}.pth")
+        model.load_state_dict(saved_dictionary['model_state_dict'])
+        optimizer.load_state_dict(saved_dictionary['optimizer_state_dict'])
+        curr_epochs = saved_dictionary['epoch']
+        losses = saved_dictionary['losses']
+        train_acc = saved_dictionary['train_acc']
+        valid_acc = saved_dictionary['valid_acc']
+        epochs = saved_dictionary['epoch_list']
+        model.train()
+        print(f"Resuming Training at Epoch-{curr_epochs}")
+
+    for epoch in range(curr_epochs, curr_epochs + num_epochs):
         for msg, labels in train:
             optimizer.zero_grad()
             pred = model(msg[0].cuda())
@@ -102,8 +108,19 @@ def train_rnn_network(model, train, valid, num_epochs=5, learning_rate=1e-5, che
         print("Epoch %d; Loss %f; Train Acc %f; Val Acc %f" % (
               epoch+1, loss, train_acc[-1], valid_acc[-1]))
 
-        if checkpoint and (epoch + 1) % checkpoint == 0:
-            model.save_model(model.name + f"-{epoch + 1}")
+        if (epoch + 1) % checkpoint == 0:
+            # Save model
+            torch.save({
+            'epoch': epoch+1,
+            'epoch_list': epochs,
+            'losses': losses,
+            'train_acc': train_acc,
+            'valid_acc': valid_acc,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            }, f"../Models/{sys.argv[2]}-{epoch+1}.pth")
+            print(f"Reached Checkpoint [{epoch+1}]: Saved model to ../Models/{sys.argv[2]}-{epoch+1}.pth")
+            generate_confusion_matrix(model, num_classes)
     
     # Plot curves
     plt.title("Loss Training Curve")
@@ -119,6 +136,8 @@ def train_rnn_network(model, train, valid, num_epochs=5, learning_rate=1e-5, che
     plt.ylabel("Accuracy")
     plt.legend(loc='best')
     plt.show()
+
+    return model
 
 def get_accuracy(model, data):
     """ Compute the accuracy of the `model` across a dataset `data`
@@ -160,13 +179,64 @@ def get_class_num(emotion):
     return S_140_KEY[emotion]
     # return EMO_TO_CLASS[emotion]
 
+def generate_confusion_matrix(model, num_classes):
+
+    confusion_matrix = []
+    for i in range(num_classes):
+        a = [0]
+        confusion_matrix.append(a*num_classes)
+
+    for tweet, label in test_iter:
+        # tweet = tweet.unsqueeze(0)
+        output = model(tweet[0].cuda())
+        pred = output.max(1, keepdim=True)[1]
+        
+        for i in range(pred.shape[0]):
+            pred_idx = int(pred[i][0])
+            true_idx = int(label[i])
+
+            confusion_matrix[true_idx][pred_idx] += 1
+    
+    print("Confusion Matrix:")
+    for row in confusion_matrix:
+        print(row)
+
+    # Use for saving to csv:
+    # if csv_name:
+    #     with open(f"../Confusion Matrices/{csv_name}.csv", "w+", encoding='utf-8', newline='') as new_data:
+
+    #         writer = csv.writer(new_data)
+    #         # header = [""] + list(range(num_classes))
+    #         header = [""]
+
+    #         for i in range(num_classes):
+    #             header += [get_emotion(i)]
+            
+    #         writer.writerow(header)
+
+    #         i = 0
+    #         for row in confusion_matrix:
+    #             # indexed_row = [i] + row
+    #             indexed_row = [get_emotion(i)] + row
+    #             writer.writerow(indexed_row)
+    #             i += 1
+
+    #     print("")
+    #     print(f"Saved to: ../../Sentiment Analysis Model Report/{csv_name}.csv")
+
 if __name__ == "__main__":
+
+    if len(sys.argv) != 4:
+        print("Usage: py char_model.py load_name save_name data_set_name")
+        print("Let load_name = -n if training new model from scratch")
+        exit(0)
 
     BATCH_SIZE = 1024
     NUM_CLASSES = 2
-    EPOCHS = 10
+    EPOCHS = 30
     LR = 0.004
     HIDDEN_SIZE = 100
+    DATA_SET_NAME = sys.argv[3]
     # NUM_CLASSES = 8
     
     # set up datafield for messages
@@ -185,14 +255,23 @@ if __name__ == "__main__":
                                     # preprocessing=lambda x: EMO_TO_CLASS[x])
 
     fields = [('label', label_field), ('tweet', text_field)]
-    dataset = torchtext.data.TabularDataset("../Data/s140_alltweets.csv", # name of the file
+    train = torchtext.data.TabularDataset(f"../Data/{DATA_SET_NAME}-train.csv", # name of the file
                                             "csv",               # fields are separated by a tab
                                             fields)
 
-    # 0.6, 0.2, 0.2 split, respectively
-    train, valid, test = dataset.split([0.6, 0.2, 0.2])
+    valid = torchtext.data.TabularDataset(f"../Data/{DATA_SET_NAME}-validation.csv", # name of the file
+                                            "csv",               # fields are separated by a tab
+                                            fields)
 
-    # # Use only for crowd flower
+    test = torchtext.data.TabularDataset(f"../Data/{DATA_SET_NAME}-test.csv", # name of the file
+                                            "csv",               # fields are separated by a tab
+                                            fields)
+
+
+    # 0.6, 0.2, 0.2 split, respectively
+    # train, valid, test = dataset.split([0.6, 0.2, 0.2])
+
+    # Use only for crowd flower
     sad = []
     happy = []
 
@@ -227,8 +306,7 @@ if __name__ == "__main__":
 
     print(f"Training Dataset: {len(train)}; Validation Dataset:{len(valid)}; Testing Dataset:{len(test)}")
 
-    # build a vocabulary of every character in dataset
-    text_field.build_vocab(dataset)    
+    text_field.build_vocab(train)    
     vocab = text_field.vocab.stoi
 
     train_iter = torchtext.data.BucketIterator(train,
@@ -251,85 +329,7 @@ if __name__ == "__main__":
                                             repeat=False)                  # repeat the iterator for many epochs
 
 
-    model_gru = SentimentGRU(len(text_field.vocab.stoi), HIDDEN_SIZE, NUM_CLASSES, True)
+    model_gru = train_rnn_network(len(text_field.vocab.stoi), HIDDEN_SIZE, NUM_CLASSES, train_iter, 
+                                  valid_iter, bid=True, num_epochs=EPOCHS, learning_rate=LR, checkpoint=5)
 
-    if 4 <= len(sys.argv) <= 5 and sys.argv[1] == "-c":
-        epochs = int(sys.argv[2])
-        lrate = float(sys.argv[3])
-        csv_name = ""
-
-        if len(sys.argv) >= 5:
-            csv_name = sys.argv[4]
-        
-        train_rnn_network(model_gru, train_iter, valid_iter, num_epochs=epochs, learning_rate=lrate)
-        print("Test Accuracy:", get_accuracy(model_gru, test_iter))
-       
-        confusion_matrix = []
-        for i in range(NUM_CLASSES):
-            a = [0]
-            confusion_matrix.append(a*NUM_CLASSES)
-
-        for tweet, label in test_iter:
-            # tweet = tweet.unsqueeze(0)
-            output = model_gru(tweet[0].cuda())
-            pred = output.max(1, keepdim=True)[1]
-            
-            for i in range(pred.shape[0]):
-                pred_idx = int(pred[i][0])
-                true_idx = int(label[i])
-
-                confusion_matrix[true_idx][pred_idx] += 1
-        
-        print("Confusion Matrix:")
-        for row in confusion_matrix:
-            print(row)
-
-        if csv_name:
-            with open(f"../Confusion Matrices/{csv_name}.csv", "w+", encoding='utf-8', newline='') as new_data:
-
-                writer = csv.writer(new_data)
-                # header = [""] + list(range(NUM_CLASSES))
-                header = [""]
-
-                for i in range(NUM_CLASSES):
-                    header += [get_emotion(i)]
-                
-                writer.writerow(header)
-
-                i = 0
-                for row in confusion_matrix:
-                    # indexed_row = [i] + row
-                    indexed_row = [get_emotion(i)] + row
-                    writer.writerow(indexed_row)
-                    i += 1
-
-            print("")
-            print(f"Saved to: ../../Sentiment Analysis Model Report/{csv_name}.csv")
-
-    elif len(sys.argv) >= 4 and sys.argv[1] == "-t":
-        
-        epochs = int(sys.argv[2])
-        lrate = float(sys.argv[3])
-        model_name = ""
-        checkpoint_interval = None
-
-        if len(sys.argv) >= 5:
-            model_name = sys.argv[4]
-        if len(sys.argv) == 6:
-            checkpoint_interval = int(sys.argv[5])
-
-        model_gru.name = model_name
-        train_rnn_network(model_gru, train_iter, valid_iter, num_epochs=epochs, learning_rate=lrate, checkpoint=checkpoint_interval)
-        print("Test Accuracy:", get_accuracy(model_gru, test_iter))
-
-        if not checkpoint_interval:
-            model_gru.save_model(model_name)
-
-    elif sys.argv[1] == "-u":
-        # default options
-        train_rnn_network(model_gru, train_iter, valid_iter, num_epochs=EPOCHS, learning_rate=LR)
-        print("Test Accuracy:", get_accuracy(model_gru, test_iter))
-
-    else:
-        print("Bad Usage")
-                
+    print("Test Accuracy:", get_accuracy(model_gru, test_iter))

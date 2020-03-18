@@ -176,7 +176,7 @@ def train_model(data, vocab, batch_size=8, num_epochs=1, lr=0.001, print_every=1
             'loss': loss,
             'iteration' : iteration
             }, f"saved_models/{sys.argv[2]}-{e+1}.pth")
-            print(f"Checkpoint[{e+1}]: Saved model to saved_models/{sys.argv[2]}-{e+1}.pth")
+            print(f"Reached Checkpoint [{e+1}]: Saved model to saved_models/{sys.argv[2]}-{e+1}.pth")
 
 
     plt.title("Loss Training Curve")
