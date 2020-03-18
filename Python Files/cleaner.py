@@ -127,11 +127,14 @@ class DataCleaner:
 
             # Remove authors
             for i in range(len(train)):
-                train[i] = (train[0], train[1])
+                old = train[i]
+                train[i] = [old[0], old[1]]
             for i in range(len(valid)):
-                valid[i] = (valid[0], valid[1])
+                old = valid[i]
+                valid[i] = [old[0], old[1]]
             for i in range(len(test)):
-                test[i] = (test[0], test[1])
+                old = test[i]
+                test[i] = [old[0], old[1]]
 
             print("Removed author bias.")
 
