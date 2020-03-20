@@ -71,7 +71,7 @@ class SentimentGRU(nn.Module):
 
         return out
 
-def train_rnn_network(input_size, hidden_size, num_classes, train, valid, bid=False, num_layers=1, num_epochs=5, learning_rate=1e-5, checkpoint=1):
+def train_rnn_network(input_size, hidden_size, num_classes, train, valid, vocab, bid=False, num_layers=1, num_epochs=5, learning_rate=1e-5, checkpoint=1):
 
     model = SentimentGRU(input_size, hidden_size, num_classes, bi=bid, layers=num_layers)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
@@ -118,6 +118,7 @@ def train_rnn_network(input_size, hidden_size, num_classes, train, valid, bid=Fa
             'valid_acc': valid_acc,
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
+            'vocab' : vocab
             }, f"../Models/{sys.argv[2]}-{epoch+1}.pth")
             print(f"Reached Checkpoint [{epoch+1}]: Saved model to ../Models/{sys.argv[2]}-{epoch+1}.pth")
             generate_confusion_matrix(model, num_classes)
@@ -224,13 +225,8 @@ def generate_confusion_matrix(model, num_classes):
     #     print("")
     #     print(f"Saved to: ../../Sentiment Analysis Model Report/{csv_name}.csv")
 
-def interactive(model_gru):
-        # Interactive Mode
-    saved_dictionary = torch.load(f"../Models/{sys.argv[1]}.pth")
-    model_gru.load_state_dict(saved_dictionary['model_state_dict'])
-    model_gru.eval()
-    print("Loaded model from ../Models/", sys.argv[2] + ".pth")
-
+def interactive(model_gru, vocab):
+    # Interactive Mode
     inp_string = ""
 
     softmax = nn.Softmax(dim=0)
@@ -260,9 +256,6 @@ if __name__ == "__main__":
         print("or")
         print("py char_model [load_name] -i [data_set_name] for interactive mode")
         print("Let load_name = -n if training new model from scratch")
-
-
-
         exit(0)
     
     if sys.argv[2] == "-i":
@@ -276,78 +269,84 @@ if __name__ == "__main__":
     HIDDEN_SIZE = 100
     DATA_SET_NAME = sys.argv[3]
     # NUM_CLASSES = 8
-    
-    # set up datafield for messages
-    text_field = torchtext.data.Field(sequential=True,    # text sequence
-                                    tokenize=lambda x: x, # because are building a character-RNN
-                                    include_lengths=True, # to track the length of sequences, for batching
-                                    batch_first=True,
-                                    use_vocab=True)       # to turn each character into an integer index
-    
-    # set up datafield for labels
-    label_field = torchtext.data.Field(sequential=False, # not a sequence
-                                    use_vocab=False,     # don't need to track vocabulary
-                                    is_target=True,      
-                                    batch_first=True,
-                                    preprocessing=lambda x: S_140_KEY[x]) # convert text to 0 and 1
-                                    # preprocessing=lambda x: EMO_TO_CLASS[x])
-
-    fields = [('label', label_field), ('tweet', text_field)]
-    train = torchtext.data.TabularDataset(f"../Data/{DATA_SET_NAME}-train.csv", # name of the file
-                                            "csv",               # fields are separated by a tab
-                                            fields)
-
-    valid = torchtext.data.TabularDataset(f"../Data/{DATA_SET_NAME}-validation.csv", # name of the file
-                                            "csv",               # fields are separated by a tab
-                                            fields)
-
-    test = torchtext.data.TabularDataset(f"../Data/{DATA_SET_NAME}-test.csv", # name of the file
-                                            "csv",               # fields are separated by a tab
-                                            fields)
-
-
-    sad = []
-    happy = []
-
-    for item in train.examples:
-        label = item.label
-        if label == 0:
-            sad.append(item)
-        elif label == 1:
-            happy.append(item)
-
-    print(f"sad = {len(sad)}, happy = {len(happy)}")
-
-    print(f"Training Dataset: {len(train)}; Validation Dataset:{len(valid)}; Testing Dataset:{len(test)}")
-
-    text_field.build_vocab(train)    
-    vocab = text_field.vocab.stoi
-
-    train_iter = torchtext.data.BucketIterator(train,
-                                            batch_size=BATCH_SIZE,
-                                            shuffle=True,                  # Shuffle the training dataset
-                                            sort_key=lambda x: len(x.tweet), # to minimize padding
-                                            sort_within_batch=True,        # sort within each batch
-                                            repeat=False)                  # repeat the iterator for many epochs
-
-    test_iter = torchtext.data.BucketIterator(test,
-                                            batch_size=BATCH_SIZE,
-                                            sort_key=lambda x: len(x.tweet), # to minimize padding
-                                            sort_within_batch=True,        # sort within each batch
-                                            repeat=False)                  # repeat the iterator for many epochs
-
-    valid_iter = torchtext.data.BucketIterator(valid,
-                                            batch_size=BATCH_SIZE,
-                                            sort_key=lambda x: len(x.tweet), # to minimize padding
-                                            sort_within_batch=True,        # sort within each batch
-                                            repeat=False)                  # repeat the iterator for many epochs
 
     if not interactive_mode:
+
+        # set up datafield for messages
+        text_field = torchtext.data.Field(sequential=True,    # text sequence
+                                        tokenize=lambda x: x, # because are building a character-RNN
+                                        include_lengths=True, # to track the length of sequences, for batching
+                                        batch_first=True,
+                                        use_vocab=True)       # to turn each character into an integer index
+        
+        # set up datafield for labels
+        label_field = torchtext.data.Field(sequential=False, # not a sequence
+                                        use_vocab=False,     # don't need to track vocabulary
+                                        is_target=True,      
+                                        batch_first=True,
+                                        preprocessing=lambda x: S_140_KEY[x]) # convert text to 0 and 1
+                                        # preprocessing=lambda x: EMO_TO_CLASS[x])
+
+        fields = [('label', label_field), ('tweet', text_field)]
+        train = torchtext.data.TabularDataset(f"../Data/{DATA_SET_NAME}-train.csv", # name of the file
+                                                "csv",               # fields are separated by a tab
+                                                fields)
+
+        valid = torchtext.data.TabularDataset(f"../Data/{DATA_SET_NAME}-validation.csv", # name of the file
+                                                "csv",               # fields are separated by a tab
+                                                fields)
+
+        test = torchtext.data.TabularDataset(f"../Data/{DATA_SET_NAME}-test.csv", # name of the file
+                                                "csv",               # fields are separated by a tab
+                                                fields)
+
+
+        sad = []
+        happy = []
+
+        for item in train.examples:
+            label = item.label
+            if label == 0:
+                sad.append(item)
+            elif label == 1:
+                happy.append(item)
+
+        print(f"sad = {len(sad)}, happy = {len(happy)}")
+
+        print(f"Training Dataset: {len(train)}; Validation Dataset:{len(valid)}; Testing Dataset:{len(test)}")
+
+        text_field.build_vocab(train)    
+        vocab = text_field.vocab.stoi
+
+        train_iter = torchtext.data.BucketIterator(train,
+                                                batch_size=BATCH_SIZE,
+                                                shuffle=True,                  # Shuffle the training dataset
+                                                sort_key=lambda x: len(x.tweet), # to minimize padding
+                                                sort_within_batch=True,        # sort within each batch
+                                                repeat=False)                  # repeat the iterator for many epochs
+
+        test_iter = torchtext.data.BucketIterator(test,
+                                                batch_size=BATCH_SIZE,
+                                                sort_key=lambda x: len(x.tweet), # to minimize padding
+                                                sort_within_batch=True,        # sort within each batch
+                                                repeat=False)                  # repeat the iterator for many epochs
+
+        valid_iter = torchtext.data.BucketIterator(valid,
+                                                batch_size=BATCH_SIZE,
+                                                sort_key=lambda x: len(x.tweet), # to minimize padding
+                                                sort_within_batch=True,        # sort within each batch
+                                                repeat=False)                  # repeat the iterator for many epochs
+
         model_gru = train_rnn_network(len(text_field.vocab.stoi), HIDDEN_SIZE, NUM_CLASSES, train_iter, 
-                                  valid_iter, bid=True, num_epochs=EPOCHS, learning_rate=LR, checkpoint=5)
+                                  valid_iter, vocab, bid=True, num_epochs=EPOCHS, learning_rate=LR, checkpoint=5)
+        print("Test Accuracy:", get_accuracy(model_gru, test_iter))
+    
     else:
-        model_gru = SentimentGRU(len(text_field.vocab.stoi), HIDDEN_SIZE, NUM_CLASSES, bi=True, layers=1)
-        interactive(model_gru)
+        saved_dictionary = torch.load(f"../Models/{sys.argv[1]}.pth")
+        vocab = saved_dictionary['vocab']
+        model_gru = SentimentGRU(len(vocab), HIDDEN_SIZE, NUM_CLASSES, bi=True, layers=1)
+        model_gru.load_state_dict(saved_dictionary['model_state_dict'])
+        model_gru.eval()
+        print("Loaded model from ../Models/", sys.argv[2] + ".pth")
+        interactive(model_gru, vocab)
 
-
-    print("Test Accuracy:", get_accuracy(model_gru, test_iter))
