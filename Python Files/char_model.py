@@ -224,12 +224,50 @@ def generate_confusion_matrix(model, num_classes):
     #     print("")
     #     print(f"Saved to: ../../Sentiment Analysis Model Report/{csv_name}.csv")
 
+def interactive(model_gru):
+        # Interactive Mode
+    saved_dictionary = torch.load(f"../Models/{sys.argv[1]}.pth")
+    model_gru.load_state_dict(saved_dictionary['model_state_dict'])
+    model_gru.eval()
+    print("Loaded model from ../Models/", sys.argv[2] + ".pth")
+
+    inp_string = ""
+
+    softmax = nn.Softmax(dim=0)
+
+    while True:
+        inp_string = input("Enter message: ")
+
+        if not inp_string:
+            break # exit
+
+        stoi = convert_to_stoi(vocab, inp_string)
+        x_tensor = torch.tensor([stoi])
+
+        raw_pred = model_gru(x_tensor)
+        pred = raw_pred.max(1, keepdim=True)[1]
+        pred_idx = int(pred[0][0])
+
+        print(f"{get_emotion(pred_idx)}; Confidence: {softmax(raw_pred[0])[pred_idx]}\n")
+
+
 if __name__ == "__main__":
 
+    interactive_mode = False
+
     if len(sys.argv) != 4:
-        print("Usage: py char_model.py load_name save_name data_set_name")
+        print("Usage: py char_model.py [load_name] [save_name] [data_set_name]")
+        print("or")
+        print("py char_model [load_name] -i [data_set_name] for interactive mode")
         print("Let load_name = -n if training new model from scratch")
+
+
+
         exit(0)
+    
+    if sys.argv[2] == "-i":
+        print("entering interactive mode")
+        interactive_mode = True
 
     BATCH_SIZE = 1024
     NUM_CLASSES = 2
@@ -268,10 +306,6 @@ if __name__ == "__main__":
                                             fields)
 
 
-    # 0.6, 0.2, 0.2 split, respectively
-    # train, valid, test = dataset.split([0.6, 0.2, 0.2])
-
-    # Use only for crowd flower
     sad = []
     happy = []
 
@@ -283,26 +317,6 @@ if __name__ == "__main__":
             happy.append(item)
 
     print(f"sad = {len(sad)}, happy = {len(happy)}")
-
-    # for item in train.examples:
-    #     label = item.label
-    #     if label == 0:
-    #         excited.append(item)
-    #     elif label == 1:
-    #         angry.append(item)
-    #     elif label == 4:
-    #         relief.append(item)
-    #     elif label == 5:
-    #         love.append(item)
-    #     elif label == 6:
-    #         happy.append(item)
-        
-    # # duplicate each spam message 6 more times
-    # train.examples = train.examples + excited * 2
-    # train.examples = train.examples + angry * 6
-    # train.examples = train.examples + relief * 6
-    # train.examples = train.examples + love * 2
-    # train.examples = train.examples + happy * 2
 
     print(f"Training Dataset: {len(train)}; Validation Dataset:{len(valid)}; Testing Dataset:{len(test)}")
 
@@ -328,8 +342,12 @@ if __name__ == "__main__":
                                             sort_within_batch=True,        # sort within each batch
                                             repeat=False)                  # repeat the iterator for many epochs
 
-
-    model_gru = train_rnn_network(len(text_field.vocab.stoi), HIDDEN_SIZE, NUM_CLASSES, train_iter, 
+    if not interactive_mode:
+        model_gru = train_rnn_network(len(text_field.vocab.stoi), HIDDEN_SIZE, NUM_CLASSES, train_iter, 
                                   valid_iter, bid=True, num_epochs=EPOCHS, learning_rate=LR, checkpoint=5)
+    else:
+        model_gru = SentimentGRU(len(text_field.vocab.stoi), HIDDEN_SIZE, NUM_CLASSES, bi=True, layers=1)
+        interactive(model_gru)
+
 
     print("Test Accuracy:", get_accuracy(model_gru, test_iter))
