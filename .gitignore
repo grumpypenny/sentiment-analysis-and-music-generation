@@ -139,8 +139,6 @@ s140_alltweets.csv
 s140_no_bias-train.csv
 s140_no_bias-validation.csv
 s140_no_bias-test.csv
-# Ignore model files
-Models/*.pth
 
 # Ignore ABC library
 ABC-generation/abcmidi/*.exe

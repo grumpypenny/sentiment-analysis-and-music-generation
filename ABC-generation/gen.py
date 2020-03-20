@@ -191,6 +191,7 @@ if __name__ == "__main__":
     
     if len(sys.argv) != 4:
         print("Usage: py gen.py load_name save_name abc_file_name")
+        print("put '-i' for save mode to load in interactive mode")
         print("Let load_name = -n if training new model from scratch")
         exit(0)
 
