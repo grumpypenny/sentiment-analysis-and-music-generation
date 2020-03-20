@@ -143,7 +143,7 @@ def train_model(data, vocab, batch_size=8, num_epochs=1, lr=0.001, print_every=1
                                               shuffle=True,
                                               sort_within_batch=True)
 
-    for e in range(curr_epochs, curr_epochs + num_epochs):
+    for epoch in range(curr_epochs, curr_epochs + num_epochs):
         # get training set
         for (sequence, lengths), label in data_iter:
             target = sequence[:, 1:] # the tweet from index 1 to end
@@ -165,18 +165,17 @@ def train_model(data, vocab, batch_size=8, num_epochs=1, lr=0.001, print_every=1
                 # print("    " + sample_sequence(model, 140, 0.8))
                 avg_loss = 0
                 
-        print("[Finished %d Epochs]" % (e + 1))
+        print("[Finished %d Epochs]" % (epoch + 1))
 
-        if (e + 1) % check_point_interval == 0:
+        if (epoch + 1) % check_point_interval == 0:
             # Save model
             torch.save({
-            'epoch': e+1,
+            'epoch': epoch+1,
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
-            'loss': loss,
-            'iteration' : iteration
-            }, f"saved_models/{sys.argv[2]}-{e+1}.pth")
-            print(f"Reached Checkpoint [{e+1}]: Saved model to saved_models/{sys.argv[2]}-{e+1}.pth")
+            'vocab' : vocab
+            }, f"saved_models/{sys.argv[2]}-{epoch+1}.pth")
+            print(f"Reached Checkpoint [{epoch+1}]: Saved model to saved_models/{sys.argv[2]}-{epoch+1}.pth")
 
 
     plt.title("Loss Training Curve")
@@ -187,19 +186,53 @@ def train_model(data, vocab, batch_size=8, num_epochs=1, lr=0.001, print_every=1
 
     return model
 
+
+def interactive(model, vocab):
+    while True:
+        temp = 0
+        while True:
+            temp = input("enter temperature or enter 'exit' to quit\n")
+
+            if temp == "exit":
+                return
+
+            try:
+                float(temp)
+                break
+            except ValueError:        
+                print("please enter a valid float")
+
+
+        sample_sequence(model, vocab, 500, float(temp))
+        print("\n\n\n")
+
+
 if __name__ == "__main__":
     
+    interactive_mode = False
     if len(sys.argv) != 4:
         print("Usage: py gen.py load_name save_name abc_file_name")
         print("put '-i' for save mode to load in interactive mode")
         print("Let load_name = -n if training new model from scratch")
         exit(0)
 
-    abc, text_field = get_data()
-    v = Vocabulary(abc, text_field)
-    vocab_stoi = v.vocab_stoi
-    vocab_itos = v.vocab_itos
+    if sys.argv[2] == "-i":
+        interactive_mode = True
 
-    model = train_model(abc, v,  batch_size=32, num_epochs=10, lr=0.005, print_every=50, check_point_interval=1)
+    if not interactive_mode:
+        abc, text_field = get_data()
+        v = Vocabulary(abc, text_field)
+        vocab_stoi = v.vocab_stoi
+        vocab_itos = v.vocab_itos
 
-    sample_sequence(model, v, max_len=500, temperature=0.4)
+        model = train_model(abc, v,  batch_size=32, num_epochs=10, lr=0.005, print_every=50, check_point_interval=1)
+
+        sample_sequence(model, v, max_len=500, temperature=0.4)
+    else:
+        saved_dictionary = torch.load(f"saved_models/{sys.argv[1]}.pth")
+        vocab = saved_dictionary['vocab']
+        gen = Generator(vocab.vocab_size, 64)
+        gen.load_state_dict(saved_dictionary['model_state_dict'])
+        gen.eval()
+        print("Loaded model from ../saved_models/", sys.argv[1] + ".pth")
+        interactive(gen, vocab)
