@@ -237,6 +237,8 @@ def interactive(model_gru, vocab):
         if not inp_string:
             break # exit
 
+        inp_string = inp_string.lower()
+
         stoi = convert_to_stoi(vocab, inp_string)
         x_tensor = torch.tensor([stoi])
 
@@ -250,27 +252,27 @@ def interactive(model_gru, vocab):
 if __name__ == "__main__":
 
     interactive_mode = False
-
-    if len(sys.argv) != 4:
-        print("Usage: py char_model.py [load_name] [save_name] [data_set_name]")
-        print("or")
-        print("py char_model [load_name] -i [data_set_name] for interactive mode")
-        print("Let load_name = -n if training new model from scratch")
-        exit(0)
-    
-    if sys.argv[2] == "-i":
-        print("entering interactive mode")
-        interactive_mode = True
-
     BATCH_SIZE = 1024
     NUM_CLASSES = 2
     EPOCHS = 5
     LR = 0.004
     HIDDEN_SIZE = 100
-    DATA_SET_NAME = sys.argv[3]
     # NUM_CLASSES = 8
 
+    if len(sys.argv) < 3:
+        print("Usage: py char_model.py [load_name] [save_name] [data_set_name]")
+        print("or")
+        print("Let load_name = -n if training new model from scratch")
+        print("py char_model [load_name] -i for interactive mode")
+        exit(0)
+    
+    if sys.argv[2] == "-i":
+        print("Using in Interactive Mode.")
+        interactive_mode = True
+
+
     if not interactive_mode:
+        DATA_SET_NAME = sys.argv[3]
 
         # set up datafield for messages
         text_field = torchtext.data.Field(sequential=True,    # text sequence
@@ -299,7 +301,6 @@ if __name__ == "__main__":
         test = torchtext.data.TabularDataset(f"../Data/{DATA_SET_NAME}-test.csv", # name of the file
                                                 "csv",               # fields are separated by a tab
                                                 fields)
-
 
         sad = []
         happy = []
@@ -348,5 +349,6 @@ if __name__ == "__main__":
         model_gru.load_state_dict(saved_dictionary['model_state_dict'])
         model_gru.eval()
         print("Loaded model from ../Models/", sys.argv[2] + ".pth")
+        print(f"Vocab Size: {len(vocab)}")
         interactive(model_gru, vocab)
 
