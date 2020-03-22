@@ -1,6 +1,8 @@
+import os
 import sys
 import torch
 import torch.nn as nn
+
 from char_model import SentimentGRU
 from char_model import convert_to_stoi
 from char_model import get_emotion
@@ -36,11 +38,11 @@ def interactive(model, vocab):
             sad()
 
 def happy():
-    saved_dictionary = torch.load("../ABC-generation/saved_models/happy_load-10.pth")
+    saved_dictionary = torch.load("../Models/happy-10.pth")
     generate_music(saved_dictionary)
 
 def sad():
-    saved_dictionary = torch.load("../ABC-generation/saved_models/sad-8.pth")
+    saved_dictionary = torch.load("../Models/sad-8.pth")
     generate_music(saved_dictionary)
     
 
@@ -49,7 +51,16 @@ def generate_music(saved_dictionary):
     gen = Generator(vocab.vocab_size, 64)
     gen.load_state_dict(saved_dictionary['model_state_dict'])
     gen.eval()
-    sample_sequence(gen, vocab, 500, 0.6, output_file=False)
+    # store the ABC as a string
+    song = sample_sequence(gen, vocab, 500, 0.6, output_file=False, print_out=False)
+    #write the abc string into a file for conversions
+    with open("../tempABC/song.abc", 'w') as writer:
+        writer.write(song)
+    
+    # NOTE DOES NOT WORK YET
+    # os.system("& '../ABC-generation/abcmidi/abc2midi.exe -o output.mid ../tempABC/song.abc'")
+    
+    
 
 if __name__ == "__main__":
     

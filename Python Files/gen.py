@@ -64,7 +64,7 @@ class Vocabulary():
 
         # print("vocab size: ", self.vocab_size)
 
-def sample_sequence(model, vocab, max_len=100, temperature=0.5, output_file=True):
+def sample_sequence(model, vocab, max_len=100, temperature=0.5, output_file=True, print_out=False):
     """
     Generate a sequence from <model>
     <vocab> is a Vocabulary object that matches the dataset 
@@ -92,11 +92,16 @@ def sample_sequence(model, vocab, max_len=100, temperature=0.5, output_file=True
         generated_sequence += predicted_char       
         inp = torch.Tensor([top_i]).long()
 
+    if print_out:
+        print(generated_sequence)
+
     if output_file:
         with open(f'{sys.argv[3]}.abc', 'w') as writer:
             writer.write(generated_sequence)
+        return None
+    else:
+        return generated_sequence
 
-    print(generated_sequence)
     
 def get_data():
     """
@@ -204,7 +209,7 @@ def interactive(model, vocab):
                 print("please enter a valid float")
 
 
-        sample_sequence(model, vocab, 500, float(temp))
+        sample_sequence(model, vocab, 500, float(temp), print_out=True)
         print("\n\n\n")
 
 
@@ -228,7 +233,7 @@ if __name__ == "__main__":
 
         model = train_model(abc, v,  batch_size=32, num_epochs=10, lr=0.005, print_every=50, check_point_interval=1)
 
-        sample_sequence(model, v, max_len=500, temperature=0.4)
+        sample_sequence(model, v, max_len=500, temperature=0.4, print_out=True)
     else:
         saved_dictionary = torch.load(f"../Models/{sys.argv[1]}.pth")
         vocab = saved_dictionary['vocab']
