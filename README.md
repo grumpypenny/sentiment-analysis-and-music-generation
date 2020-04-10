@@ -42,6 +42,7 @@ Our model has two layers, a GRU and a fully connected. The GRU we used is a sing
 The GRU is used to make sure the character we generate on this pass depends on the last character. That way as we generate character a pattern forms. 
 
 __Here is how we make music:__
+
 The AI is trained on a two datasets, one for happy songs and one for sad songs. We seperated songs into happy and sad based on the key. 
 For example a song in A major would be happy while a song in A minor would be sad. Both models are the same, the only difference is the data its trained on. 
 
