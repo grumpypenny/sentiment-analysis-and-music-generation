@@ -6,22 +6,30 @@ This project was created by two University of Toronto Students, Ajitesh Misra an
 
 ## Installation and Usage ##
 #### Repository Structure ####
-*TODO Sharven: Come back here after the repo is cleaned*
 
-    ├── readme_resources        # The resources loaded in the README (e.g. the game screenshot)
-    ├── src                     # The source code for the game
-    │   ├── dataset             # The Sudoku boards in text file format that will be loaded by the game
-    |   |   ├── debug           # The Sudoku boards in text file format that can be used for debugging
-    ├── test                    # The testing scripts that can be used to test parts of the project
+    ├── ABC-Generation              # Where Music generation models are trained (not required to use application)
+    ├── Data                        # The datasets for sentiment analysis training
+    ├── Models                      # The models used by the application
+    ├── Music Generation Curves     # The trainings curves of the music generation models
+    ├── Readme Resources            # The resources used by the README file
+    ├── Sample Music                # Some sample music generated as placeholders
+    ├── Sentiment Curves            # The training curves of the sentiment analysis model
+    │   ├── Confusion Matrices      # Generated confusion matrices while training
+    │   ├── Crowd Flower            # The training curves on the crowd-flower sentiment dataset
+    │   ├── S140                    # The training curves on the sentiment140 dataset
+    ├── Source Files                # The source Python files for the models and data processing
+    │   ├── abcmidi                 # The library used to convert from ABC to MIDI
+    │   ├── tempABC                 # The generated ABC file from the given input will be placed here
+    ├── .gitignore
     ├── LICENSE
     └── README.md          
           
 1. Clone the repository using the `Clone or Download` button
-2. Run `main.py` in the directory `Python Files`
+2. Run `main.py` in the directory `Source Files`
 - You will be prompted to input text that will be used to generate music \
 *Use the following instructions as we resolve a bug with the abc2midi conversion library:*
-- After inputting text, it will output a file called `out.abc` in the same directory as `main.py`
-- Copy/Paste the contents of this text file to [online abc to midi converter](https://www.mandolintab.net/abcconverter.php) and download the `.midi` file generated
+- After inputting text, it will output a file called `song.abc` in the directory as `Source Files/tempABC`
+- Copy/Paste the contents of this file to [online abc to midi converter](https://www.mandolintab.net/abcconverter.php) and download the `.midi` file generated
 - This `.midi` file can then be opened in an audio editing software such as [Audacity](https://www.audacityteam.org/) to view and play the generated musical notes
 
 ## Model Architecture ##
@@ -32,7 +40,7 @@ We used three seperate models that are linked together:
 
 If the predicted sentiment is sad, we sample from the sad music generation model. Otherwise, we sample from the happy music genration model.
 
-#### Sentiment Analysis Model ####
+### Sentiment Analysis Model ###
 
 This model was trained on the [Sentiment140](https://www.kaggle.com/kazanova/sentiment140) dataset. This dataset contains 1.6 million tweets labelled as postive or negative. We chose to use only postive and negative as our clases to keep the problem simple.
 
@@ -53,17 +61,17 @@ After feeding in the batch into the GRU, we concatenate the max activation and m
 **Final Performance**
 Hyperparameter Selection:
 - Training Batch Size = 1024
-- Epochs = 30
+- Epochs = 10
 - Learning Rate = 0.004
-- GRU Hidden Size = 100
+- GRU Hidden Layer Size = 100
 
 Final Test Accuracy ~**83%**
 
-| Training Curve  | Confusion Matrix |
-| ------------- | ------------- |
-|  *TODO Sharven: Add training curve matrix*   | *TODO Sharven: Add confusion matrix*  |
+<img src="Readme%20Resources/SentimentLoss.png">
+<img src="Readme%20Resources/SentimentAcc.png">
+<img src="Readme%20Resources/SentimentConfusion.png">
 
-#### Music Generation Model ####
+### Music Generation Model ###
 
 To generate music we used [ABCnotation](https://abcnotation.com/learn). This format gives a versitile way to storing music as raw text. The AI generates music in this format, which can then be changed into an audio format like midi. 
 
@@ -83,11 +91,15 @@ For example a song in A major would be happy while a song in A minor would be sa
 
 Once the sentiment of the text is found, a sample is sequenced from the correct model. We do not want the same characters from the model each time, so what we do is generate a multinomial distribution of all the possible characters we could. The way we generate text also takes in a integer called temperature. The higher the temperature, the more uniform the character distribution is. What this does is it ensures we do not always get the same characters when we run the model. The higher the temperature makes the text more random. We sample one character at a time, only stopping once we reach the character limit. 
 
+**Final Performance**
 Hyperparameter Selection:
 - Training Batch Size = 32
 - Epochs = 10
 - Learning Rate = 0.005
-- GRU Hidden Size = 64
+- GRU Hidden Layer Size = 64
+
+<img src="Readme%20Resources/MusicHappy.png">
+<img src="Readme%20Resources/MusicSad.png">
 
 ## Licensing ##
 
