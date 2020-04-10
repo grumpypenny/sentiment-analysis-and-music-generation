@@ -1,8 +1,14 @@
 # Sentiment Analysis with Music Generation
-## About ##
 The goal of this project is to create unique music based on text given by a user. Given a sad story it will generate sad music. Likewise given a happy tale we get joyful music. This can be used to content creators to generate music based on video and movie scripts and can also be used while reading a novel to generate music in the background based on the read text.
 
 This project was created by two University of Toronto Students, Ajitesh Misra and Sharven Prasad Dhanasekar 
+
+## Table of Contents ##
+* [Installation and Usage](#installation-and-usage)
+* [Model Architecture](#model-architecture)
+* [Licensing](#licensing)
+* [References](#references)
+
 
 ## Installation and Usage ##
 #### Repository Structure ####
