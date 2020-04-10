@@ -65,9 +65,9 @@ Final Test Accuracy ~**83%**
 
 #### Music Generation Model ####
 
-To generate music we used [ABCnotation](https://abcnotation.com/learn). This format gives a versitile way to storing music as raw text. 
+To generate music we used [ABCnotation](https://abcnotation.com/learn). This format gives a versitile way to storing music as raw text. The AI generates music in this format, which can then be changed into an audio format like midi. 
 
-The AI generates music in this format, which can then be changed into an audio format like midi. 
+The reason why we picked this format is because it allows us to to easily generate music with weaker machines. 
 
 **Architecture:**
 
@@ -83,6 +83,12 @@ For example a song in A major would be happy while a song in A minor would be sa
 
 Once the sentiment of the text is found, a sample is sequenced from the correct model. We do not want the same characters from the model each time, so what we do is generate a multinomial distribution of all the possible characters we could. The way we generate text also takes in a integer called temperature. The higher the temperature, the more uniform the character distribution is. What this does is it ensures we do not always get the same characters when we run the model. The higher the temperature makes the text more random. We sample one character at a time, only stopping once we reach the character limit. 
 
+Hyperparameter Selection:
+- Training Batch Size = 32
+- Epochs = 10
+- Learning Rate = 0.005
+- GRU Hidden Size = 64
+
 ## Licensing ##
 
 [GPLv3 Licensing Information](https://github.com/grumpypenny/sentiment-analysis-and-music-generation/blob/master/LICENSE)
@@ -90,3 +96,4 @@ Once the sentiment of the text is found, a sample is sequenced from the correct 
 ## References ##
 
 *TODO: Put all papers and libraries used here*
+Much of our code is based on these [course notes](https://www.cs.toronto.edu/~lczhang/360/) by Lisa Zhang.
