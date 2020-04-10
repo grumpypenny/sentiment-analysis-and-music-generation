@@ -26,6 +26,7 @@ This project was created by two University of Toronto Students, Ajitesh Misra an
           
 1. Clone the repository using the `Clone or Download` button
 2. Run `main.py` in the directory `Source Files`
+- Command Line Arguments: the name of the sentiment analysis model in the `Models` folder (without the -number.pth)
 - You will be prompted to input text that will be used to generate music \
 *Use the following instructions as we resolve a bug with the abc2midi conversion library:*
 - After inputting text, it will output a file called `song.abc` in the directory as `Source Files/tempABC`
@@ -107,4 +108,5 @@ Hyperparameter Selection:
 ## References ##
 
 - Much of our code is based on these [course notes](https://www.cs.toronto.edu/~lczhang/360/) by Lisa Zhang
+- The [abcMIDI package](http://abc.sourceforge.net/abcMIDI/original/) is used conver the ABC file into a MIDI file
 - The ABC files we used for training can be found [Here](https://abcnotation.com/tunes)
