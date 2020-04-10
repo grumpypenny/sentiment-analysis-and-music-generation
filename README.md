@@ -26,7 +26,8 @@ This project was created by two University of Toronto Students, Ajitesh Misra an
           
 1. Clone the repository using the `Clone or Download` button
 2. Run `main.py` in the directory `Source Files`
-- Command Line Arguments: the name of the sentiment analysis model in the `Models` folder (without the -number.pth)
+- Command Line Arguments: 
+    - the name of the sentiment analysis model in the `Models` folder (without the ".pth")
 - You will be prompted to input text that will be used to generate music \
 *Use the following instructions as we resolve a bug with the abc2midi conversion library:*
 - After inputting text, it will output a file called `song.abc` in the directory as `Source Files/tempABC`
@@ -60,6 +61,7 @@ Since we are batching the dataset, all text sequences in a batch are padded with
 After feeding in the batch into the GRU, we concatenate the max activation and mean activation of GRU and feed it into a MLP to get the final sentiment prediction. This prediction is then backpropagated on using Adam as the optimizer and Cross Entropy Loss as the loss function. 
 
 **Final Performance**
+
 Hyperparameter Selection:
 - Training Batch Size = 1024
 - Epochs = 10
@@ -71,6 +73,29 @@ Final Test Accuracy ~**83%**
 <img src="Readme%20Resources/SentimentLoss.png">
 <img src="Readme%20Resources/SentimentAcc.png">
 <img src="Readme%20Resources/SentimentConfusion.png">
+
+**Train a new Sentiment Analysis model**
+
+1. Download the [sentiment140 dataset](https://www.kaggle.com/kazanova/sentiment140) and place it in the `Data` folder
+2. Run `cleaner.py` in `Source Files`
+- Command Line Arguments:
+    - The load name of the dataset (in this case it is the sentiment140 dataset without the ".csv")
+    - The save name that the datasets should be saved as
+    - The amount of data that should be cleaned and processed (set it as -1 if you wish to process the full dataset)
+    - The training split percentage (a decimal point number)
+    - The validation split percentage (a decimal point number)
+    - The test split percentage (a decimal point number)
+    
+*Note the split values need to sum to 1 for it to work properly*
+- After running `cleaner.py`, you will see three files generated in the `Data` folder with the given save name followed by `-train.csv`, `-test.csv`, and `-validation.csv`
+3. Run `char_model.py` in `Source Files`
+- Command Line Arguments:
+    - The name of the model you wish to continue traning (set it as -n if you wish to train from scratch)
+    - The name that the model should be saved as
+    - The name of the dataset used for training (in this case it would be the save name provided to `cleaner.py`)
+- After training, it will display the training curve
+
+Note that the hyperparameters of the model can be modified at the bottom of `char_model.py`.
 
 ### Music Generation Model ###
 
@@ -93,6 +118,7 @@ For example a song in A major would be happy while a song in A minor would be sa
 Once the sentiment of the text is found, a sample is sequenced from the correct model. We do not want the same characters from the model each time, so what we do is generate a multinomial distribution of all the possible characters we could. The way we generate text also takes in a integer called temperature. The higher the temperature, the more uniform the character distribution is. What this does is it ensures we do not always get the same characters when we run the model. The higher the temperature makes the text more random. We sample one character at a time, only stopping once we reach the character limit. 
 
 **Final Performance**
+
 Hyperparameter Selection:
 - Training Batch Size = 32
 - Epochs = 10
