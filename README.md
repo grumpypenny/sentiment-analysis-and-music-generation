@@ -47,7 +47,7 @@ After feeding in the batch into the GRU, we concatenate the max activation and m
 ##### Final Performance #####
 Hyperparameter Selection:
 - Training Batch Size = 1024
-- Epochs = 5
+- Epochs = 30
 - Learning Rate = 0.004
 - GRU Hidden Size = 100
 
@@ -55,7 +55,7 @@ Final Test Accuracy ~**83%**
 
 | Training Curve  | Confusion Matrix |
 | ------------- | ------------- |
-| ![Sentiment Analysis Training Curve](/Train-Validation-Graph/allData30Epochs.JPG)  | *TODO Sharven: Add confusion matrix*  |
+|  *TODO Sharven: Add training curve matrix*   | *TODO Sharven: Add confusion matrix*  |
 
 #### Music Generation Model ####
 
