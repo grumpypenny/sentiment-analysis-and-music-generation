@@ -26,7 +26,11 @@ This project was created by two University of Toronto Students, Ajitesh Misra an
 
 ## Model Architecture ##
 
-We used three seperate models that are linked together. The Sentiment Analysis model predicts the sentiment in the given text. If the sentiment is positive, it samples from the Music Generation model that is trained on happy songs. Otherwise, it samples from the model that is trained on sad songs. 
+We used three seperate models that are linked together:
+- Sentiment Analysis model predicts the sentiment in the given text
+- Two identical Music Generation models, one is trained on happy music and the other on sad music 
+
+If the predicted sentiment is sad, we sample from the sad music generation model. Otherwise, we sample from the happy music genration model.
 
 #### Sentiment Analysis Model ####
 
