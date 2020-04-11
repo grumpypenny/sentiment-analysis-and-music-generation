@@ -137,10 +137,11 @@ __Training curves:__
 
 Please note that happy model was trained for more epochs due to the dataset being larger and the songs being more complex than the sad dataset.
 
-Here is the happy training curve:
-![Happy](Readme%20Resources/MusicHappy.png)
+Here are the happy and sad training curves:
 
-And here is the sad training curve:
+
+
+![Happy](Readme%20Resources/MusicHappy.png)
 ![Sad](Readme%20Resources/MusicSad.png)
 
 
