@@ -76,6 +76,8 @@ Hyperparameter Selection:
 
 Final Test Accuracy ~**83%**
 
+__Training curves:__
+
 <img src="Readme%20Resources/SentimentLoss.png">
 <img src="Readme%20Resources/SentimentAcc.png">
 <img src="Readme%20Resources/SentimentConfusion.png">
@@ -127,18 +129,18 @@ Once the sentiment of the text is found, a sample is sequenced from the correct 
 
 Hyperparameter Selection:
 - Training Batch Size = 32
-- Epochs = 10
+- Epochs = 200 for happy model and 30 for sad model
 - Learning Rate = 0.005
 - GRU Hidden Layer Size = 64
 
-__training curves:__
+__Training curves:__
 
-Please note that happy was trained for more epochs due to the dataset having more complex songs. The sad songs we found were generally more simple. 
+Please note that happy model was trained for more epochs due to the dataset having more complex songs. The sad songs we found were generally more simple. 
 
 <img src="Readme%20Resources/MusicHappy.png">
 <img src="Readme%20Resources/MusicSad.png">
 
-**Train a new Sentiment Analysis model**
+**Train a new Music Generation model**
 
 1. Run `gen.py` in `Source Files` with the following command line arguments:
     1. The name of an existing model you want to continue training or `-n` to train a new model
