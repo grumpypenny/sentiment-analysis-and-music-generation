@@ -135,10 +135,14 @@ Hyperparameter Selection:
 
 __Training curves:__
 
-Please note that happy model was trained for more epochs due to the dataset having more complex songs. The sad songs we found were generally more simple. 
+Please note that happy model was trained for more epochs due to the dataset being larger and the songs being more complex than the sad dataset.
 
-<img src="Readme%20Resources/MusicHappy.png">
-<img src="Readme%20Resources/MusicSad.png">
+Here is the happy training curve:
+![Happy](Readme%20Resources/MusicHappy.png)
+
+And here is the sad training curve:
+![Sad](Readme%20Resources/MusicSad.png)
+
 
 **Train a new Music Generation model**
 
