@@ -103,7 +103,7 @@ def sample_sequence(model, vocab, max_len=100, temperature=0.5, output_file=True
         return generated_sequence
 
     
-def get_data():
+def get_data(get_happy=False):
     """
     Get the cleaned abc's and return:
     the abc's in a tabular dataset and the textfield
@@ -117,8 +117,10 @@ def get_data():
                                     eos_token="<EOS>")    # EOS token
 
     fields = [('text', text_field)]
-    abc = torchtext.data.TabularDataset("../ABC-generation/sad.csv", "csv", fields)
-
+    if not get_happy:
+        abc = torchtext.data.TabularDataset("../ABC-generation/sad.csv", "csv", fields)
+    else:
+        abc = torchtext.data.TabularDataset("../ABC-generation/happy.csv", "csv", fields)
     return abc, text_field
 
 def train_model(data, vocab, batch_size=8, num_epochs=1, lr=0.001, print_every=100, check_point_interval=1):
@@ -216,17 +218,24 @@ def interactive(model, vocab):
 if __name__ == "__main__":
     
     interactive_mode = False
-    if len(sys.argv) != 4:
-        print("Usage: py gen.py load_name save_name abc_file_name")
+    if len(sys.argv) != 5:
+        print("Usage: py gen.py load_name save_name abc_file_name emotion")
         print("put '-i' for save mode to load in interactive mode")
         print("Let load_name = -n if training new model from scratch")
         exit(0)
+
+    if sys.argv[4] != "happy" and sys.argv[4] != "sad":
+        print("only supports either 'happy' or 'sad' emotions")
+
+    get_happy = False
+    if sys.argv[4] == "happy":
+        get_happy = True
 
     if sys.argv[2] == "-i":
         interactive_mode = True
 
     if not interactive_mode:
-        abc, text_field = get_data()
+        abc, text_field = get_data(get_happy)
         v = Vocabulary(abc, text_field)
         vocab_stoi = v.vocab_stoi
         vocab_itos = v.vocab_itos
