@@ -131,7 +131,25 @@ Hyperparameter Selection:
 - Learning Rate = 0.005
 - GRU Hidden Layer Size = 64
 
-*TODO Ajitesh: Add training curves for music generation*
+__training curves:__
+
+Please note that happy was trained for more epochs due to the dataset having more complex songs. The sad songs we found were generally more simple. 
+
+<img src="Readme%20Resources/MusicHappy.png">
+<img src="Readme%20Resources/MusicSad.png">
+
+**Train a new Sentiment Analysis model**
+
+1. Run `gen.py` in `Source Files` with the following command line arguments:
+    1. The name of an existing model you want to continue training or `-n` to train a new model
+    2. The name you want the new model to be saved under or `-i` to load up the model interactively
+    3. The filename you want the text output to be saved under
+    4. the emotion you want to train. `happy` and `sad` are the only two options for now. 
+2. The data is already in the repo, under `/ABC-generation/happy.csv` and `/ABC-generation/sad.csv`. Both have already been cleaned.
+
+___NOTE:___
+
+When training a sad model an unknown CUDA error may occur. If it happens then you can resume training the model from the last sucessful epoch. 
 
 ## Licensing ##
 
