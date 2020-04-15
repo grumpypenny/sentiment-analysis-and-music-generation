@@ -8,7 +8,7 @@ This project was created by two University of Toronto Students, Ajitesh Misra an
 * [Model Architecture](#model-architecture)
 * [Licensing](#licensing)
 * [References](#references)
-
+* [Deploy Only)(#deploy)
 
 ## Installation and Usage ##
 #### Repository Structure ####
@@ -167,3 +167,6 @@ When training a sad model an unknown CUDA error may occur. If it happens then yo
 - Much of our code is based on these [course notes](https://www.cs.toronto.edu/~lczhang/360/) by Lisa Zhang
 - The [abcMIDI package](http://abc.sourceforge.net/abcMIDI/original/) is used conver the ABC file into a MIDI file
 - The ABC files we used for training can be found [Here](https://abcnotation.com/tunes)
+
+## Deploy only ##
+This text is only here in the deploy branch. 
