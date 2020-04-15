@@ -1,11 +1,25 @@
-X:16162
-T:The Stran
-Z:id:hn-jig-31
+X:1460
+T:Bonny Towna of MS
+S:Tradic10
 M:6/8
+L:1/8
+Q:120
+S:John Clare,Poet,Helpston (1793-1864
+R:Jig
+O:England
+A:Lancashire
+H:1823
+Z:vmp.Chris Partington.
 K:G
-G2A|B2G AGA|B2c BAG|ABc d3|gdB ABA|G2G ABc|ded cBA|G2G G2:|
-B|def gfe|d2d BcA|BAG A3|BcA G2:|
-|:Bcd dBd|e2e ded|A2A ABc|dBB ABc|
-dBd d2B|ABA B2B|A2G ABc|BAG G2:|
-|:BGA BAB|cAB BAG|ABA GAB|cAF G2:|
-|:d2c BAB|dBA BAB|cBA GBc|ded d2B|c2A A2:|
+(3GAB)|ccA BcA|B2G Bcd|B2dd2B|G2G F2G|!
+G2G BdG|cde fgf|gfe def|!
+g2fd2G|G2A BAG|FGAB2c|Bcd B2d|!
+BAB cAF|E2G G2e|fdB cBA|!
+Bcd ecB|cde fdc|def g2g|!
+aed cde|dcB cAB|G2G G2G|!
+A2A BAG|ABA FAA|GFG ABc|dcA BAG|!
+A2A GAB|cBA AcA|c2d e2c|!
+B2B BdB|cAF G2:|!
+|:B|A2D EFD|GAB ABd|e2c BAF|G3 B2:|!
+|:d|e2d gfe|d2d d2d|cBA B2d|!edB dcB|A2A B2d|!
+e2e 
