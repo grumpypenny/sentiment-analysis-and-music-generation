@@ -10,4 +10,4 @@ app = Flask(__name__)
 # / is the first directory
 @app.route("/")
 def hello(name = None):
-    return "hello world!!!"
+    return "hello Sharven, \n\t - Ajitesh via flask"
