@@ -64,7 +64,7 @@ class Vocabulary():
 
         # print("vocab size: ", self.vocab_size)
 
-def sample_sequence(model, vocab, max_len=100, temperature=0.5, output_file=True, print_out=False):
+def sample_sequence(model, vocab, max_len=100, temperature=0.5, output_file=False, print_out=False):
     """
     Generate a sequence from <model>
     <vocab> is a Vocabulary object that matches the dataset 
@@ -72,7 +72,7 @@ def sample_sequence(model, vocab, max_len=100, temperature=0.5, output_file=True
     """
     generated_sequence = ""
    
-    inp = torch.Tensor([vocab.vocab_stoi["<BOS>"]]).long()
+    inp = torch.Tensor([vocab["<BOS>"]]).long()
     hidden = None
     for p in range(max_len):
         output, hidden = model(inp.unsqueeze(0), hidden)
@@ -219,17 +219,17 @@ def interactive(model, vocab):
 if __name__ == "__main__":
     
     interactive_mode = False
-    if len(sys.argv) != 5:
-        print("Usage: py gen.py load_name save_name abc_file_name emotion")
+    if len(sys.argv) != 4:
+        print("Usage: py gen.py load_name save_name emotion")
         print("put '-i' for save mode to load in interactive mode")
         print("Let load_name = -n if training new model from scratch")
         exit(0)
 
-    if sys.argv[4] != "happy" and sys.argv[4] != "sad":
+    if sys.argv[3] != "happy" and sys.argv[3] != "sad":
         print("only supports either 'happy' or 'sad' emotions")
 
     get_happy = False
-    if sys.argv[4] == "happy":
+    if sys.argv[3] == "happy":
         get_happy = True
 
     if sys.argv[2] == "-i":
@@ -239,7 +239,7 @@ if __name__ == "__main__":
         abc, text_field = get_data(get_happy)
         v = Vocabulary(abc, text_field)
         model = train_model(abc, v.vocab_stoi, v.vocab_size,  batch_size=32, num_epochs=10, lr=0.005, print_every=50, check_point_interval=1)
-        sample_sequence(model, v.vocab_stoi, max_len=500, temperature=0.4, print_out=True)
+        sample_sequence(model, v.vocab_stoi, max_len=500, temperature=0.4, print_out=True, output_file=False)
     else:
         saved_dictionary = torch.load(f"../Models/{sys.argv[1]}.pth")
         vocab = saved_dictionary['vocab']

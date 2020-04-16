@@ -38,7 +38,7 @@ def interactive(model, vocab):
             sad()
 
 def happy():
-    saved_dictionary = torch.load("../Models/happy-10.pth")
+    saved_dictionary = torch.load("../Models/happy_flask-10.pth")
     generate_music(saved_dictionary)
 
 def sad():
@@ -48,7 +48,7 @@ def sad():
 
 def generate_music(saved_dictionary):
     vocab = saved_dictionary['vocab']
-    gen = Generator(vocab.vocab_size, 64)
+    gen = Generator(len(vocab), 64)
     gen.load_state_dict(saved_dictionary['model_state_dict'])
     gen.eval()
     # store the ABC as a string
