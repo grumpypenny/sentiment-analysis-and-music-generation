@@ -123,9 +123,9 @@ def get_data(get_happy=False):
         abc = torchtext.data.TabularDataset("../ABC-generation/happy.csv", "csv", fields)
     return abc, text_field
 
-def train_model(data, vocab, batch_size=8, num_epochs=1, lr=0.001, print_every=100, check_point_interval=1):
+def train_model(data, vocab, vocab_size, batch_size=8, num_epochs=1, lr=0.001, print_every=100, check_point_interval=1):
     
-    model = Generator(v.vocab_size, 64)
+    model = Generator(vocab_size, 64)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     criterion = nn.CrossEntropyLoss()
     iteration = 0
@@ -142,6 +142,7 @@ def train_model(data, vocab, batch_size=8, num_epochs=1, lr=0.001, print_every=1
         loss_data = [loss.item()]
         avg_loss = loss.item()
         iteration = saved_dictionary['iteration']
+        vocab = saved_dictionary['vocab']
         model.train()
         print(f"Resuming Training at Epoch-{curr_epochs}")
     
@@ -237,12 +238,8 @@ if __name__ == "__main__":
     if not interactive_mode:
         abc, text_field = get_data(get_happy)
         v = Vocabulary(abc, text_field)
-        vocab_stoi = v.vocab_stoi
-        vocab_itos = v.vocab_itos
-
-        model = train_model(abc, v,  batch_size=32, num_epochs=10, lr=0.005, print_every=50, check_point_interval=1)
-
-        sample_sequence(model, v, max_len=500, temperature=0.4, print_out=True)
+        model = train_model(abc, v.vocab_stoi, v.vocab_size,  batch_size=32, num_epochs=10, lr=0.005, print_every=50, check_point_interval=1)
+        sample_sequence(model, v.vocab_stoi, max_len=500, temperature=0.4, print_out=True)
     else:
         saved_dictionary = torch.load(f"../Models/{sys.argv[1]}.pth")
         vocab = saved_dictionary['vocab']
