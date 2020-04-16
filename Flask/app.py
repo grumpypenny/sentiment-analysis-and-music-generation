@@ -15,4 +15,4 @@ def index():
 @app.route('/submit', methods=['POST'])
 def submit():
     text = request.form['text']
-    return generate_ABC("Generated ABC: \n\n" + text)
+    return generate_ABC(text)

@@ -38,7 +38,7 @@ def interactive(model, vocab_stoi):
             sad()
 
 def happy():
-    saved_dictionary = torch.load("../Models/happy_flask-10.pth")
+    saved_dictionary = torch.load("../Models/happy_flask-1.pth")
     generate_music(saved_dictionary)
 
 def sad():
@@ -71,7 +71,7 @@ if __name__ == "__main__":
     
     saved_dictionary = torch.load(f"../Models/{sys.argv[1]}.pth")
     vocab_stoi = saved_dictionary['vocab']
-    vocab_itos = saved_dictionary['vocab_itos']
+    # vocab_itos = saved_dictionary['vocab_itos']
     model_gru = SentimentGRU(len(vocab_stoi), 100, 2, bi=True, layers=1)
     model_gru.load_state_dict(saved_dictionary['model_state_dict'])
     model_gru.eval()

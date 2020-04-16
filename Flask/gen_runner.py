@@ -39,7 +39,7 @@ class Generator(nn.Module):
 
         return output, hidden
 
-def sample_sequence(model, vocab, max_len=100, temperature=0.5, output_file=True, print_out=False):
+def sample_sequence(model, vocab_stoi, vocab_itos, max_len=100, temperature=0.5):
     """
     Generate a sequence from <model>
     <vocab> is a Vocabulary object that matches the dataset 
@@ -47,7 +47,7 @@ def sample_sequence(model, vocab, max_len=100, temperature=0.5, output_file=True
     """
     generated_sequence = ""
    
-    inp = torch.Tensor([vocab.vocab_stoi["<BOS>"]]).long()
+    inp = torch.Tensor([vocab_stoi["<BOS>"]]).long()
     hidden = None
     for p in range(max_len):
         output, hidden = model(inp.unsqueeze(0), hidden)
@@ -60,19 +60,11 @@ def sample_sequence(model, vocab, max_len=100, temperature=0.5, output_file=True
         # print("dist =", output_dist)
         top_i = int(torch.multinomial(output_dist, 1)[0])
         # Add predicted character to string and use as next input
-        predicted_char = vocab.vocab_itos[top_i]
+        predicted_char = vocab_itos[top_i]
         
         if predicted_char == "<EOS>":
             break
         generated_sequence += predicted_char       
         inp = torch.Tensor([top_i]).long()
 
-    if print_out:
-        print(generated_sequence)
-
-    if output_file:
-        with open(f'{sys.argv[3]}.abc', 'w') as writer:
-            writer.write(generated_sequence)
-        return None
-    else:
-        return generated_sequence
+    return generated_sequence

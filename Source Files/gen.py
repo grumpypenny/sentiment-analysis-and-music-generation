@@ -240,7 +240,7 @@ if __name__ == "__main__":
     if not interactive_mode:
         abc, text_field = get_data(get_happy)
         v = Vocabulary(abc, text_field)
-        model = train_model(abc, v.vocab_stoi, v.vocab_itos, v.vocab_size, batch_size=32, num_epochs=10, lr=0.005, print_every=50, check_point_interval=1)
+        model = train_model(abc, v.vocab_stoi, v.vocab_itos, v.vocab_size, batch_size=32, num_epochs=1, lr=0.005, print_every=50, check_point_interval=1)
         sample_sequence(model, v.vocab_stoi, v.vocab_itos, max_len=500, temperature=0.4, print_out=True, output_file=False)
     else:
         saved_dictionary = torch.load(f"../Models/{sys.argv[1]}.pth")

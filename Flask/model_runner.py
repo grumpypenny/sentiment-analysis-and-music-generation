@@ -39,15 +39,17 @@ def generate_ABC(inp_string):
 
     # TODO: Get maximum model instead of hard coded one
     if S_140_KEY[pred_idx] == "positive":
-        saved_dictionary = torch.load("../Models/happy-10.pth")
+        saved_dictionary = torch.load("../Models/happy_flask-1.pth")
     else:
         saved_dictionary = torch.load("../Models/sad-8.pth")
 
     # Load Music Model
-    vocab = saved_dictionary['vocab']
-    gen = Generator(vocab.vocab_size, 64)
+    vocab_stoi = saved_dictionary['vocab']
+    vocab_itos = saved_dictionary['vocab_itos']
+    
+    gen = Generator(len(vocab_stoi), 64)
     gen.load_state_dict(saved_dictionary['model_state_dict'])
     gen.eval()
 
     # Get ABC string
-    return sample_sequence(gen, vocab, 500, 0.6, output_file=False, print_out=False)
+    return sample_sequence(gen, vocab_stoi, vocab_itos, 500, 0.6)
