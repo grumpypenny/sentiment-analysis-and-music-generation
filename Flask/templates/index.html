@@ -2,19 +2,22 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Index</title>
+    <link href="index.css" rel="stylesheet" type="text/css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Index</title>
 </head>
 
 <body>
-  <h1 style="color: blueviolet">Muse</h1>
-  <h2 style="color: blue">By Sharven Prasad Dhanasekar and Ajitesh Misra</h2>
-  <p>Enter the text:</p>
-  <form action="{{ url_for('submit') }}" method="post">
-    <textarea name="text" rows="4" cols="50"></textarea>
-    <input type="submit" value="Generate!">
-  </form>
+    <h1>SentiMuse</h1>
+    <form action="{{ url_for('submit') }}" method="post">
+        <div align="center">
+            <textarea name="text" placeholder="Enter your text here" rows="15" cols="100"></textarea>
+        </div>
+        <div align="center">
+            <input type="submit" class="block" value="Generate Music">
+        </div>
+    </form>
 </body>
 </html>

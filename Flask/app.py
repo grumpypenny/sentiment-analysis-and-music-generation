@@ -15,4 +15,8 @@ def index():
 @app.route('/submit', methods=['POST'])
 def submit():
     text = request.form['text']
-    return generate_ABC(text)
+    generated = generate_ABC(text)
+    generated = generated.replace('\n', '<br/>')
+    return generated
+
+    # return "DUMMY TEXT LOREM IPSUM"

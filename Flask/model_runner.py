@@ -43,6 +43,8 @@ def generate_ABC(inp_string):
     else:
         saved_dictionary = torch.load("../Models/sad_flask-10.pth")
 
+    print(f"Prediction: {S_140_KEY[pred_idx]} Confidence: {softmax(raw_pred[0])[pred_idx]}")
+
     # Load Music Model
     vocab_stoi = saved_dictionary['vocab']
     vocab_itos = saved_dictionary['vocab_itos']
