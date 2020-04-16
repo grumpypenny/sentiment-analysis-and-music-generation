@@ -11,7 +11,7 @@ from gen import Generator
 from gen import sample_sequence
 from gen import Vocabulary
 
-def interactive(model, vocab):
+def interactive(model, vocab_stoi):
     # Interactive Mode
     inp_string = ""
 
@@ -25,7 +25,7 @@ def interactive(model, vocab):
 
         inp_string = inp_string.lower()
 
-        stoi = convert_to_stoi(vocab, inp_string)
+        stoi = convert_to_stoi(vocab_stoi, inp_string)
         x_tensor = torch.tensor([stoi])
 
         raw_pred = model_gru(x_tensor)
@@ -47,12 +47,13 @@ def sad():
     
 
 def generate_music(saved_dictionary):
-    vocab = saved_dictionary['vocab']
-    gen = Generator(len(vocab), 64)
+    vocab_stoi = saved_dictionary['vocab']
+    vocab_itos = saved_dictionary['vocab_itos']
+    gen = Generator(len(vocab_stoi), 64)
     gen.load_state_dict(saved_dictionary['model_state_dict'])
     gen.eval()
     # store the ABC as a string
-    song = sample_sequence(gen, vocab, 500, 0.6, output_file=False, print_out=False)
+    song = sample_sequence(gen, vocab_stoi, vocab_itos, 500, 0.6, output_file=False, print_out=False)
     #write the abc string into a file for conversions
     with open("./tempABC/song.abc", 'w') as writer:
         writer.write(song)
@@ -69,10 +70,11 @@ if __name__ == "__main__":
         exit(1)
     
     saved_dictionary = torch.load(f"../Models/{sys.argv[1]}.pth")
-    vocab = saved_dictionary['vocab']
-    model_gru = SentimentGRU(len(vocab), 100, 2, bi=True, layers=1)
+    vocab_stoi = saved_dictionary['vocab']
+    vocab_itos = saved_dictionary['vocab_itos']
+    model_gru = SentimentGRU(len(vocab_stoi), 100, 2, bi=True, layers=1)
     model_gru.load_state_dict(saved_dictionary['model_state_dict'])
     model_gru.eval()
     print("Loaded model from ../Models/", sys.argv[1] + ".pth")
-    print(f"Vocab Size: {len(vocab)}")
-    interactive(model_gru, vocab)
+    print(f"Vocab Size: {len(vocab_stoi)}")
+    interactive(model_gru, vocab_stoi)

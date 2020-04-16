@@ -64,7 +64,7 @@ class Vocabulary():
 
         # print("vocab size: ", self.vocab_size)
 
-def sample_sequence(model, vocab, max_len=100, temperature=0.5, output_file=False, print_out=False):
+def sample_sequence(model, vocab_stoi, vocab_itos, max_len=100, temperature=0.5, output_file=False, print_out=False):
     """
     Generate a sequence from <model>
     <vocab> is a Vocabulary object that matches the dataset 
@@ -72,7 +72,7 @@ def sample_sequence(model, vocab, max_len=100, temperature=0.5, output_file=Fals
     """
     generated_sequence = ""
    
-    inp = torch.Tensor([vocab["<BOS>"]]).long()
+    inp = torch.Tensor([vocab_stoi["<BOS>"]]).long()
     hidden = None
     for p in range(max_len):
         output, hidden = model(inp.unsqueeze(0), hidden)
@@ -85,7 +85,7 @@ def sample_sequence(model, vocab, max_len=100, temperature=0.5, output_file=Fals
         # print("dist =", output_dist)
         top_i = int(torch.multinomial(output_dist, 1)[0])
         # Add predicted character to string and use as next input
-        predicted_char = vocab.vocab_itos[top_i]
+        predicted_char = vocab_itos[top_i]
         
         if predicted_char == "<EOS>":
             break
@@ -123,7 +123,7 @@ def get_data(get_happy=False):
         abc = torchtext.data.TabularDataset("../ABC-generation/happy.csv", "csv", fields)
     return abc, text_field
 
-def train_model(data, vocab, vocab_size, batch_size=8, num_epochs=1, lr=0.001, print_every=100, check_point_interval=1):
+def train_model(data, vocab_stoi, vocab_itos, vocab_size, batch_size=8, num_epochs=1, lr=0.001, print_every=100, check_point_interval=1):
     
     model = Generator(vocab_size, 64)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
@@ -142,7 +142,8 @@ def train_model(data, vocab, vocab_size, batch_size=8, num_epochs=1, lr=0.001, p
         loss_data = [loss.item()]
         avg_loss = loss.item()
         iteration = saved_dictionary['iteration']
-        vocab = saved_dictionary['vocab']
+        vocab_stoi = saved_dictionary['vocab']
+        vocab_itos = saved_dictionary['vocab_itos']
         model.train()
         print(f"Resuming Training at Epoch-{curr_epochs}")
     
@@ -182,7 +183,8 @@ def train_model(data, vocab, vocab_size, batch_size=8, num_epochs=1, lr=0.001, p
             'epoch': epoch+1,
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
-            'vocab' : vocab
+            'vocab': vocab_stoi,
+            'vocab_itos' : vocab_itos
             }, f"../Models/{sys.argv[2]}-{epoch+1}.pth")
             print(f"Reached Checkpoint [{epoch+1}]: Saved model to ../Models/{sys.argv[2]}-{epoch+1}.pth")
 
@@ -196,7 +198,7 @@ def train_model(data, vocab, vocab_size, batch_size=8, num_epochs=1, lr=0.001, p
     return model
 
 
-def interactive(model, vocab):
+def interactive(model, vocab_stoi, vocab_itos):
     while True:
         temp = 0
         while True:
@@ -212,7 +214,7 @@ def interactive(model, vocab):
                 print("please enter a valid float")
 
 
-        sample_sequence(model, vocab, 500, float(temp), print_out=True)
+        sample_sequence(model, vocab_stoi, vocab_itos, 500, float(temp), print_out=True)
         print("\n\n\n")
 
 
@@ -238,13 +240,14 @@ if __name__ == "__main__":
     if not interactive_mode:
         abc, text_field = get_data(get_happy)
         v = Vocabulary(abc, text_field)
-        model = train_model(abc, v.vocab_stoi, v.vocab_size,  batch_size=32, num_epochs=10, lr=0.005, print_every=50, check_point_interval=1)
-        sample_sequence(model, v.vocab_stoi, max_len=500, temperature=0.4, print_out=True, output_file=False)
+        model = train_model(abc, v.vocab_stoi, v.vocab_itos, v.vocab_size, batch_size=32, num_epochs=10, lr=0.005, print_every=50, check_point_interval=1)
+        sample_sequence(model, v.vocab_stoi, v.vocab_itos, max_len=500, temperature=0.4, print_out=True, output_file=False)
     else:
         saved_dictionary = torch.load(f"../Models/{sys.argv[1]}.pth")
-        vocab = saved_dictionary['vocab']
-        gen = Generator(vocab.vocab_size, 64)
+        vocab_stoi = saved_dictionary['vocab']
+        vocab_itos = saved_dictionary['vocab_itos']
+        gen = Generator(len(vocab_stoi), 64)
         gen.load_state_dict(saved_dictionary['model_state_dict'])
         gen.eval()
         print("Loaded model from ../../Models/", sys.argv[1] + ".pth")
-        interactive(gen, vocab)
+        interactive(gen, vocab_stoi, vocab_itos)
