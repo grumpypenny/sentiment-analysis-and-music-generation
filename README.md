@@ -8,7 +8,7 @@ This project was created by two University of Toronto Students, Ajitesh Misra an
 * [Model Architecture](#model-architecture)
 * [Licensing](#licensing)
 * [References](#references)
-* [Deploy Only)(#deploy)
+* [Deployment](#deployment)
 
 ## Installation and Usage ##
 #### Repository Structure ####
@@ -120,8 +120,22 @@ The GRU is used to make sure the character we generate on this pass depends on t
 
 **How we generate music:**
 
-The AI is trained on a two datasets, one for happy songs and one for sad songs. We seperated songs into happy and sad based on the key. 
-For example a song in A major would be happy while a song in A minor would be sad. Both models are the same, the only difference is the data its trained on. 
+The AI is trained on a two datasets, one for happy songs and one for sad songs. We seperated songs into happy and sad based on the mode.
+There are 7 common modes in music, in order from darkest to brightest:
+* Locrian
+* Phrygian
+* Minor
+* Dorian
+* Mixolydian
+* Major
+* Lydian
+
+We defined 'happy' as any song written in Major or Lydian mode, all else being called sad. It is important to node that Mixolydian isn't always sad in practice but for our purposes we decied to group it in with sad as it is rarely as bright as Major or Lydian. 
+
+For further information we used [this video](https://www.youtube.com/watch?v=jNY_ZCUBmcA)
+
+Both models are the same, the only difference is the data its trained on. 
+
 
 Once the sentiment of the text is found, a sample is sequenced from the correct model. We do not want the same characters from the model each time, so what we do is generate a multinomial distribution of all the possible characters we could. The way we generate text also takes in a integer called temperature. The higher the temperature, the more uniform the character distribution is. What this does is it ensures we do not always get the same characters when we run the model. The higher the temperature makes the text more random. We sample one character at a time, only stopping once we reach the character limit. 
 
@@ -158,6 +172,28 @@ ___NOTE:___
 
 When training a sad model an unknown CUDA error may occur. If it happens then you can resume training the model from the last sucessful epoch. 
 
+**Getting the data**
+
+Here is how we got the data for generating the music:
+
+1. First we downloaded abc files from [this collection](https://abcnotation.com/tunes), we recommend the *A cleaned version of the Nottingham dataset for machine learning research* as a start as it is well formatted and small enough to train simple models on. 
+The github link can be found [here](https://github.com/jukedeck/nottingham-dataset)
+
+2. Place all the abc files inside one folder
+
+3. Run `Data_Finder.py` giving it the path to the folder of abc files and the name of a csv to store the cleaned versions of them in.
+
+4. To seperate the data into happy and sad run `sorter.py` to create two new csv containing songs of only that emotion named `happy.csv` and `sad.csv` respectivly. 
+
+
+## Deployment ##
+
+We used Microsoft Azure to deploy this as a webapp. It can be viewed [here](https://sentiment-analysis-and-music-generation-muse.azurewebsites.net/)
+
+We used the python package `flask` for our backend, the folder `Flask` holds versions of our source files that are simplified to work on the web using `flask`.
+
+As of time of writing our front end is still under construction.
+
 ## Licensing ##
 
 [GPLv3 Licensing Information](https://github.com/grumpypenny/sentiment-analysis-and-music-generation/blob/master/LICENSE)
@@ -167,6 +203,4 @@ When training a sad model an unknown CUDA error may occur. If it happens then yo
 - Much of our code is based on these [course notes](https://www.cs.toronto.edu/~lczhang/360/) by Lisa Zhang
 - The [abcMIDI package](http://abc.sourceforge.net/abcMIDI/original/) is used conver the ABC file into a MIDI file
 - The ABC files we used for training can be found [Here](https://abcnotation.com/tunes)
-
-## Deploy only ##
-This text is only here in the deploy branch. 
+- We learned about musical modes from [this youtube video](https://www.youtube.com/watch?v=jNY_ZCUBmcA)
