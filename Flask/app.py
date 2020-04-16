@@ -18,5 +18,3 @@ def submit():
     generated = generate_ABC(text)
     generated = generated.replace('\n', '<br/>')
     return generated
-
-    # return "DUMMY TEXT LOREM IPSUM"
