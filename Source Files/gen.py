@@ -161,7 +161,7 @@ def train_model(data, vocab, vocab_size, batch_size=8, num_epochs=1, lr=0.001, p
             optimizer.zero_grad()
             # forward pass
             output, _ = model(inp.cuda())
-            loss = criterion(output.reshape(-1, vocab.vocab_size).cuda(), target.reshape(-1).cuda())
+            loss = criterion(output.reshape(-1, vocab_size).cuda(), target.reshape(-1).cuda())
             # backward pass
             loss.backward()
             optimizer.step()
