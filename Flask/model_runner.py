@@ -39,9 +39,9 @@ def generate_ABC(inp_string):
 
     # TODO: Get maximum model instead of hard coded one
     if S_140_KEY[pred_idx] == "positive":
-        saved_dictionary = torch.load("../Models/happy_flask-1.pth")
+        saved_dictionary = torch.load("../Models/happy_flask-10.pth")
     else:
-        saved_dictionary = torch.load("../Models/sad-8.pth")
+        saved_dictionary = torch.load("../Models/sad_flask-10.pth")
 
     # Load Music Model
     vocab_stoi = saved_dictionary['vocab']

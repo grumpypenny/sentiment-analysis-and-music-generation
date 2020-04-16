@@ -38,11 +38,11 @@ def interactive(model, vocab_stoi):
             sad()
 
 def happy():
-    saved_dictionary = torch.load("../Models/happy_flask-1.pth")
+    saved_dictionary = torch.load("../Models/happy_flask-10.pth")
     generate_music(saved_dictionary)
 
 def sad():
-    saved_dictionary = torch.load("../Models/sad-8.pth")
+    saved_dictionary = torch.load("../Models/sad_flask-10.pth")
     generate_music(saved_dictionary)
     
 

@@ -123,7 +123,7 @@ def get_data(get_happy=False):
         abc = torchtext.data.TabularDataset("../ABC-generation/happy.csv", "csv", fields)
     return abc, text_field
 
-def train_model(data, vocab_stoi, vocab_itos, vocab_size, batch_size=8, num_epochs=1, lr=0.001, print_every=100, check_point_interval=1):
+def train_model(data, vocab_stoi, vocab_itos, vocab_size, batch_size=8, num_epochs=10, lr=0.001, print_every=100, check_point_interval=1):
     
     model = Generator(vocab_size, 64)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
@@ -184,7 +184,9 @@ def train_model(data, vocab_stoi, vocab_itos, vocab_size, batch_size=8, num_epoc
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
             'vocab': vocab_stoi,
-            'vocab_itos' : vocab_itos
+            'vocab_itos' : vocab_itos,
+            'loss' : loss,
+            'iteration': iteration
             }, f"../Models/{sys.argv[2]}-{epoch+1}.pth")
             print(f"Reached Checkpoint [{epoch+1}]: Saved model to ../Models/{sys.argv[2]}-{epoch+1}.pth")
 
@@ -240,7 +242,7 @@ if __name__ == "__main__":
     if not interactive_mode:
         abc, text_field = get_data(get_happy)
         v = Vocabulary(abc, text_field)
-        model = train_model(abc, v.vocab_stoi, v.vocab_itos, v.vocab_size, batch_size=32, num_epochs=1, lr=0.005, print_every=50, check_point_interval=1)
+        model = train_model(abc, v.vocab_stoi, v.vocab_itos, v.vocab_size, batch_size=32, num_epochs=10, lr=0.005, print_every=50, check_point_interval=1)
         sample_sequence(model, v.vocab_stoi, v.vocab_itos, max_len=500, temperature=0.4, print_out=True, output_file=False)
     else:
         saved_dictionary = torch.load(f"../Models/{sys.argv[1]}.pth")
