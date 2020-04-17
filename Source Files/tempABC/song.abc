@@ -1,19 +1,17 @@
-X:11022
-T:Thed Walka The Collo Camusion's Reperion Wunder
-R:Jig
+X:13460
+T:Peemer the Wil 6 7, WM.075
+M:3/8
+L:1/8
+Q:200
+S:J.Winley,Swinton,1801.
+R:Hornpipe
 O:England
-A:Kenth
-Z:vid Mancal
-K:D
-G|B2A FAG|FAB AFE|FDF EFA|~c3 dcB|A2A dcB|cAG ABd|!
-|:~d3 dcB|AFA BAF|AFED D2:|!
-|:Bcd|edf gef|d3 dBc|dcd AFF|ABA dBB|AFD D2:|!
-|:fef|fde ddf|edB ABc|ABA BAc|Bcd dfe|fed B3:|!
-|:fed d2c|dBc def|ed cec|BAF EDE|D2F D3:|!
-|:~g3 f2a|afe fdA|cdB AFF|d
-d2 dBd|def dBc|dAB dBA|
-dcB ABd|gfg efe|ecA cBA|!
-BAF ABd|efd fed|def gfa|gfd ecd|cAF DFD|
-DFF DFD|EFA AFE|DFE D2:|
-|:fed edB|AFA A2f|efe cAA|!
-dBc dBc|dB
+A:Lancashire
+Z:vmp.Tansoon,Marcelishersham
+M:6/8
+L:1/8
+K:G
+d2c B2d|B2G G2A|BGG F2G|A2d c2B|A2G A2G|F2D D2F|D3 D2:|
+|: B2A G2A|B3 d2e|f2e d2B|d2e d2B|c2c c2d|c2B A2B|A3 G2|:\
+B2d G2B|A2A A2B|G2B d2B|A2B A2B|2A2A B2G|A2G A2B|
+B2G G2D|D2D D2D|D2B A2F|G2G A2B|c2A G2:|

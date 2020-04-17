@@ -118,9 +118,9 @@ def get_data(get_happy=False):
 
     fields = [('text', text_field)]
     if not get_happy:
-        abc = torchtext.data.TabularDataset("../ABC-generation/sad.csv", "csv", fields)
+        abc = torchtext.data.TabularDataset("../Data/sad.csv", "csv", fields)
     else:
-        abc = torchtext.data.TabularDataset("../ABC-generation/happy.csv", "csv", fields)
+        abc = torchtext.data.TabularDataset("../Data/happy.csv", "csv", fields)
     return abc, text_field
 
 def train_model(data, vocab_stoi, vocab_itos, vocab_size, batch_size=8, num_epochs=10, lr=0.001, print_every=100, check_point_interval=1):

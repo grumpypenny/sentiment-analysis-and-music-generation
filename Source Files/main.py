@@ -56,12 +56,7 @@ def generate_music(saved_dictionary):
     song = sample_sequence(gen, vocab_stoi, vocab_itos, 500, 0.6, output_file=False, print_out=False)
     #write the abc string into a file for conversions
     with open("./tempABC/song.abc", 'w') as writer:
-        writer.write(song)
-    
-    # NOTE DOES NOT WORK YET
-    # os.system("& '../ABC-generation/abcmidi/abc2midi.exe -o output.mid ../tempABC/song.abc'")
-    
-    
+        writer.write(song)    
 
 if __name__ == "__main__":
     

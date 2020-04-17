@@ -10,4 +10,6 @@ def convert():
     return output, error
 
 if __name__ == "__main__":
-    convert()
+    output, error = convert()
+    print("output: ", output)
+    print("error: ", error)
