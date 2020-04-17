@@ -6,6 +6,7 @@ This project was created by two University of Toronto Students, Ajitesh Misra an
 ## Table of Contents ##
 * [Installation and Usage](#installation-and-usage)
 * [Model Architecture](#model-architecture)
+* [Converting ABC to Audio](#conversion-to-audio)
 * [Licensing](#licensing)
 * [References](#references)
 * [Deployment](#deployment)
@@ -184,6 +185,14 @@ The github link can be found [here](https://github.com/jukedeck/nottingham-datas
 3. Run `Data_Finder.py` giving it the path to the folder of abc files and the name of a csv to store the cleaned versions of them in.
 
 4. To seperate the data into happy and sad run `sorter.py` to create two new csv containing songs of only that emotion named `happy.csv` and `sad.csv` respectivly. 
+
+## Conversion to Audio ##
+
+When running `main.py` it stores the output to `tempABC/song.abc`. To turn this into a MIDI file (an audio format that can be listened to) run `a2m.py`. This stores the output MIDI file under `outputMIDI/out.midi`. 
+
+__NOTE:__
+
+This process will overwrite any existing song in `outputMIDI`. 
 
 
 ## Deployment ##
