@@ -209,7 +209,11 @@ As of time of writing our front end is still under construction.
 
 ## References ##
 
-- Much of our code is based on these [course notes](https://www.cs.toronto.edu/~lczhang/360/) by Lisa Zhang
-- The [abcMIDI package](http://abc.sourceforge.net/abcMIDI/original/) is used conver the ABC file into a MIDI file
+- Much of our code is based on these [course notes](https://www.cs.toronto.edu/~lczhang/360/) by Lisa Zhang, 2019
+    - full URL: https://www.cs.toronto.edu/~lczhang/360/
+- The [abcMIDI package](http://abc.sourceforge.net/abcMIDI/original/) is used conver the ABC file into a MIDI file, written by James Allwright, supported by Seymour Shlien, 2006
+    - full URL: http://abc.sourceforge.net/abcMIDI/original/
 - The ABC files we used for training can be found [Here](https://abcnotation.com/tunes)
-- We learned about musical modes from [this youtube video](https://www.youtube.com/watch?v=jNY_ZCUBmcA)
+    - full URL: https://abcnotation.com/tunes
+- We learned about musical modes from [this youtube video](https://www.youtube.com/watch?v=jNY_ZCUBmcA) by David Bennett Piano, 2019
+    - full URL: https://www.youtube.com/watch?v=jNY_ZCUBmcA
