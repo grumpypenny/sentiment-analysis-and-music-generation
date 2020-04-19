@@ -1,17 +1,8 @@
-X:13460
-T:Peemer the Wil 6 7, WM.075
-M:3/8
-L:1/8
-Q:200
-S:J.Winley,Swinton,1801.
-R:Hornpipe
-O:England
-A:Lancashire
-Z:vmp.Tansoon,Marcelishersham
+X:866
+T:Jig
 M:6/8
 L:1/8
-K:G
-d2c B2d|B2G G2A|BGG F2G|A2d c2B|A2G A2G|F2D D2F|D3 D2:|
-|: B2A G2A|B3 d2e|f2e d2B|d2e d2B|c2c c2d|c2B A2B|A3 G2|:\
-B2d G2B|A2A A2B|G2B d2B|A2B A2B|2A2A B2G|A2G A2B|
-B2G G2D|D2D D2D|D2B A2F|G2G A2B|c2A G2:|
+K:D
+A|d2 d Ace|d2 d cAF|ABc Bd |d2 f edc|d2 F A3|F3 A2:|
+|:AF|AFA A2|d2 c BA|dd d e2|d2 c d2|
+a3 A2 A|B3 AFA|GFE D2:|

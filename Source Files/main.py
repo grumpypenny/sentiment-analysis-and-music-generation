@@ -37,6 +37,10 @@ def interactive(model, vocab_stoi):
         else:
             sad()
 
+        print("generated music!")
+        print("new abc file stored at ./Source Files/tempABC/song.abc")
+        break
+
 def happy():
     saved_dictionary = torch.load("../Models/happy_flask-10.pth")
     generate_music(saved_dictionary)
