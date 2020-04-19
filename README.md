@@ -14,8 +14,7 @@ This project was created by two University of Toronto Students, Ajitesh Misra an
 ## Installation and Usage ##
 #### Repository Structure ####
 
-    ├── ABC-Generation              # Where Music generation models are trained (not required to use application)
-    ├── Data                        # The datasets for sentiment analysis training
+    ├── Data                        # The datasets used by the models
     ├── Models                      # The models used by the application
     ├── Music Generation Curves     # The trainings curves of the music generation models
     ├── Readme Resources            # The resources used by the README file
@@ -27,35 +26,38 @@ This project was created by two University of Toronto Students, Ajitesh Misra an
     ├── Source Files                # The source Python files for the models and data processing
     │   ├── abcmidi                 # The library used to convert from ABC to MIDI
     │   ├── tempABC                 # The generated ABC file from the given input will be placed here
+    |   ├── outputMIDI              # The generated MIDI file will be placed here
     ├── .gitignore
     ├── LICENSE
+    ├── requirements.txt
     └── README.md          
           
 1. Clone the repository using the `Clone or Download` button
-2. Run `main.py` in the directory `Source Files`
+2. Run `pip install -r requirements.txt` to make sure all packages are installed
+3. Run `main.py` in the directory `Source Files`
 - Command Line Arguments: 
     - the name of the sentiment analysis model in the `Models` folder (without the ".pth")
 - You will be prompted to input text that will be used to generate music \
 *Use the following instructions as we resolve a bug with the abc2midi conversion library:*
 - After inputting text, it will output a file called `song.abc` in the directory as `Source Files/tempABC`
-- Copy/Paste the contents of this file to [online abc to midi converter](https://www.mandolintab.net/abcconverter.php) and download the `.midi` file generated
-- This `.midi` file can then be opened in an audio editing software such as [Audacity](https://www.audacityteam.org/) to view and play the generated musical notes
+- A MIDI file will also be generated in `Source Files/outputMIDI` and can be played directly
+- This `.midi` file can also be opened in an audio editing software such as [Audacity](https://www.audacityteam.org/) to view and play the generated musical notes in the instrument of your choice
 
 ## Model Architecture ##
 
-We used three seperate models that are linked together:
+We used three separate models that are linked together:
 - Sentiment Analysis model predicts the sentiment in the given text
 - Two identical Music Generation models, one is trained on happy music and the other on sad music 
 
-If the predicted sentiment is sad, we sample from the sad music generation model. Otherwise, we sample from the happy music genration model.
+If the predicted sentiment is sad, we sample from the sad music generation model. Otherwise, we sample from the happy music generation model.
 
 ### Sentiment Analysis Model ###
 
-This model was trained on the [Sentiment140](https://www.kaggle.com/kazanova/sentiment140) dataset. This dataset contains 1.6 million tweets labelled as postive or negative. We chose to use only postive and negative as our clases to keep the problem simple.
+This model was trained on the [Sentiment140](https://www.kaggle.com/kazanova/sentiment140) dataset. This dataset contains 1.6 million tweets labelled as positive or negative. We chose to use only positive and negative as our classes to keep the problem simple.
 
 **Architecture:**
 
-We used a bi-directional GRU Recurent Neural Net model. Out of all the GRU activiation hidden vectors, the maximum vector as well as the mean vector is then concatenated and fed into a Fully Connected MLP for classification. This MLP network only has one layer and outputs a the 2D vector that corresponds to the sentiment.
+We used a bi-directional GRU Recurrent Neural Net model. Out of all the GRU activation hidden vectors, the maximum vector as well as the mean vector is then concatenated and fed into a Fully Connected MLP for classification. This MLP network only has one layer and outputs a the 2D vector that corresponds to the sentiment.
 
 **How we classify the sentiment:**
 
@@ -99,7 +101,7 @@ __Training curves:__
 - After running `cleaner.py`, you will see three files generated in the `Data` folder with the given save name followed by `-train.csv`, `-test.csv`, and `-validation.csv`
 3. Run `char_model.py` in `Source Files`
 - Command Line Arguments:
-    - The name of the model you wish to continue traning (set it as -n if you wish to train from scratch)
+    - The name of the model you wish to continue training  (set it as -n if you wish to train from scratch)
     - The name that the model should be saved as
     - The name of the dataset used for training (in this case it would be the save name provided to `cleaner.py`)
 - After training, it will display the training curve
@@ -108,9 +110,9 @@ Note that the hyperparameters of the model can be modified at the bottom of `cha
 
 ### Music Generation Model ###
 
-To generate music we used [ABCnotation](https://abcnotation.com/learn). This format gives a versitile way to storing music as raw text. The AI generates music in this format, which can then be changed into an audio format like midi. 
+To generate music we used [ABCnotation](https://abcnotation.com/learn). This format gives a versatile way to storing music as raw text. The AI generates music in this format, which can then be changed into an audio format like midi. 
 
-The reason why we picked this format is because it allows us to to easily generate music with weaker machines. 
+The reason why we picked this format is because it allows us to easily generate music with weaker machines. 
 
 **Architecture:**
 
@@ -121,7 +123,7 @@ The GRU is used to make sure the character we generate on this pass depends on t
 
 **How we generate music:**
 
-The AI is trained on a two datasets, one for happy songs and one for sad songs. We seperated songs into happy and sad based on the mode.
+The AI is trained on a two datasets, one for happy songs and one for sad songs. We separated songs into happy and sad based on the mode.
 There are 7 common modes in music, in order from darkest to brightest:
 * Locrian
 * Phrygian
@@ -131,7 +133,7 @@ There are 7 common modes in music, in order from darkest to brightest:
 * Major
 * Lydian
 
-We defined 'happy' as any song written in Major or Lydian mode, all else being called sad. It is important to node that Mixolydian isn't always sad in practice but for our purposes we decied to group it in with sad as it is rarely as bright as Major or Lydian. 
+We defined 'happy' as any song written in Major or Lydian mode, all else being called sad. It is important to note that Mixolydian isn't always sad in practice but for our purposes we decided to group it in with sad as it is rarely as bright as Major or Lydian. 
 
 For further information we used [this video](https://www.youtube.com/watch?v=jNY_ZCUBmcA)
 
@@ -184,7 +186,7 @@ The github link can be found [here](https://github.com/jukedeck/nottingham-datas
 
 3. Run `Data_Finder.py` giving it the path to the folder of abc files and the name of a csv to store the cleaned versions of them in.
 
-4. To seperate the data into happy and sad run `sorter.py` to create two new csv containing songs of only that emotion named `happy.csv` and `sad.csv` respectivly. 
+4. To separate the data into happy and sad run `sorter.py` to create two new csv containing songs of only that emotion named `happy.csv` and `sad.csv` respectively. 
 
 ## Conversion to Audio ##
 
@@ -197,11 +199,13 @@ This process will overwrite any existing song in `outputMIDI`.
 
 ## Deployment ##
 
-We used Microsoft Azure to deploy this as a webapp. It can be viewed [here](https://sentiment-analysis-and-music-generation-muse.azurewebsites.net/)
+This code has been deployed to a website which can be found [here](https://sentimuse.azurewebsites.net/)
 
-We used the python package `flask` for our backend, the folder `Flask` holds versions of our source files that are simplified to work on the web using `flask`.
+We used Microsoft Azure and the python package `flask` to deploy the webapp. The files used are not in the repository however. They were made by converting `main.py` into something flask could use to run the website. 
 
-As of time of writing our front end is still under construction.
+For front end we only used `CSS` and `html` with no `javascript`. 
+
+For source control we used `Kudu` and `github` to maintain and update the website. 
 
 ## Licensing ##
 
