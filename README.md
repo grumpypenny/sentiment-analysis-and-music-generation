@@ -43,6 +43,10 @@ This project was created by two University of Toronto Students, Ajitesh Misra an
 - A MIDI file will also be generated in `Source Files/outputMIDI` and can be played directly
 - This `.midi` file can also be opened in an audio editing software such as [Audacity](https://www.audacityteam.org/) to view and play the generated musical notes in the instrument of your choice
 
+__NOTE:__
+
+This code requires a GPU in order to run. 
+
 ## Model Architecture ##
 
 We used three separate models that are linked together:
@@ -139,8 +143,9 @@ For further information we used [this video](https://www.youtube.com/watch?v=jNY
 
 Both models are the same, the only difference is the data its trained on. 
 
+Once the sentiment of the text is found, a sample is sequenced from the correct model. We do not want the same characters from the model each time, so what we do is generate a multinomial distribution of all the possible characters that the model can put, then sample from the most likely characters. The way we generate text also takes in a integer called temperature. The higher the temperature, the more uniform the character distribution is. What this does is it ensures we do not always get the same characters when we run the model. The higher the temperature, the more random the text. We chose a temperature value of 0.6. We sample one character at a time, only stopping once we reach the character limit or we generate the end of string character. 
 
-Once the sentiment of the text is found, a sample is sequenced from the correct model. We do not want the same characters from the model each time, so what we do is generate a multinomial distribution of all the possible characters we could. The way we generate text also takes in a integer called temperature. The higher the temperature, the more uniform the character distribution is. What this does is it ensures we do not always get the same characters when we run the model. The higher the temperature makes the text more random. We sample one character at a time, only stopping once we reach the character limit. 
+One the ABC has been generated we store it in a .abc file. We then use the `abcmidi` package, additional reading [here](http://abc.sourceforge.net/abcMIDI/original/). This package reads the .abc file and creates a MIDI of it. MIDI is a more useful format as it allows music playback. 
 
 **Final Performance**
 
@@ -192,8 +197,9 @@ When running `main.py` it stores the output to `tempABC/song.abc`. To turn this 
 
 __NOTE:__
 
-This process will overwrite any existing song in `outputMIDI`. 
-
+- This process will overwrite any existing song in `outputMIDI`. 
+- `a2m.py` uses `abcmidi`, which only works on Linux systems, on windows it will crash. 
+- If on windows then you can copy the abc file into [this website](https://www.mandolintab.net/abcconverter.php) to convert it.
 
 ## Deployment ##
 
