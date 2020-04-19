@@ -143,3 +143,6 @@ s140_no_bias-test.csv
 # Ignore ABC library
 ABC-generation/abcmidi/*.exe
 ABC-generation/abcmidi/*.o
+
+# Ignore .vscode
+.vscode
