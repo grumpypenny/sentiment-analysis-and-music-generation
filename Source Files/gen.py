@@ -193,7 +193,7 @@ def train_model(data, vocab_stoi, vocab_itos, vocab_size, batch_size=8, num_epoc
 
     plt.title("Loss Training Curve")
     plt.plot(loss_data, label="Train Loss")
-    plt.xlabel("Epoch")
+    plt.xlabel("Iterations (x50)")
     plt.ylabel("Loss")
     plt.show() 
 
