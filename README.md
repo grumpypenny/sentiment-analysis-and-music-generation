@@ -150,11 +150,9 @@ Hyperparameter Selection:
 
 __Training curves:__
 
-Please note that happy model was trained for more epochs due to the dataset being larger and the songs being more complex than the sad dataset.
+We trained both models for 10 epochs. Every 50 iterations we took the average loss and appended it to the graph. The reason happy goes on for much longer is that we have more happy songs in our dataset than sad songs.
 
-Here are the happy and sad training curves:
-
-
+The first graph is happy, the second one is sad. 
 
 ![Happy](Readme%20Resources/MusicHappy.png)
 ![Sad](Readme%20Resources/MusicSad.png)
