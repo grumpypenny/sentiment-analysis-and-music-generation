@@ -37,11 +37,11 @@ This project was created by two University of Toronto Students, Ajitesh Misra an
 3. Run `main.py` in the directory `Source Files`
 - Command Line Arguments: 
     - the name of the sentiment analysis model in the `Models` folder (without the ".pth")
-- You will be prompted to input text that will be used to generate music \
-*Use the following instructions as we resolve a bug with the abc2midi conversion library:*
-- After inputting text, it will output a file called `song.abc` in the directory as `Source Files/tempABC`
-- A MIDI file will also be generated in `Source Files/outputMIDI` and can be played directly
-- This `.midi` file can also be opened in an audio editing software such as [Audacity](https://www.audacityteam.org/) to view and play the generated musical notes in the instrument of your choice
+    - `test-10` is the best model included in the repo. It is what we reccomend to use as the argument. 
+4. You will be prompted to input text that will be used to generate music 
+5. After inputting text, it will output a file called `song.abc` in the directory as `Source Files/tempABC`
+    - If you are on Linux you can run `a2m.py` to convert the abc file to MIDI directly. The new file wll be `Source Files/outputMIDI/out.midi`
+    - If you are on Windows, the above will not work, instead use [this website](https://www.mandolintab.net/abcconverter.php) to convert the ABC to music. 
 
 __NOTE:__
 
@@ -54,6 +54,12 @@ We used three separate models that are linked together:
 - Two identical Music Generation models, one is trained on happy music and the other on sad music 
 
 If the predicted sentiment is sad, we sample from the sad music generation model. Otherwise, we sample from the happy music generation model.
+
+### Saving and Loading Models ###
+
+All the code saves and loads the models in such a way that they can resume training AND also provide predictions. All models are saved under the `Models` folder.
+
+The convention we used is we save the model as `<model_name>-<number of epochs>`. For example if we train a model named `example` for 20 epochs, `example-20.pth` will be the filename its saved as.
 
 ### Sentiment Analysis Model ###
 
