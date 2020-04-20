@@ -37,15 +37,15 @@ This project was created by two University of Toronto Students, Ajitesh Misra an
 3. Run `main.py` in the directory `Source Files`
 - Command Line Arguments: 
     - the name of the sentiment analysis model in the `Models` folder (without the ".pth")
-    - `test-10` is the best model included in the repo. It is what we reccomend to use as the argument. 
+    - `test-10` is the best model included in the repo. It is what we recommend to use as the argument. 
 4. You will be prompted to input text that will be used to generate music 
 5. After inputting text, it will output a file called `song.abc` in the directory as `Source Files/tempABC`
-    - If you are on Linux you can run `a2m.py` to convert the abc file to MIDI directly. The new file wll be `Source Files/outputMIDI/out.midi`
+    - If you are on Linux you can run `a2m.py` to convert the abc file to MIDI directly. The new file will be `Source Files/outputMIDI/out.midi`
     - If you are on Windows, the above will not work, instead use [this website](https://www.mandolintab.net/abcconverter.php) to convert the ABC to music. 
 
 __NOTE:__
 
-This code requires a GPU in order to run. 
+This code requires a GPU to run. 
 
 ## Model Architecture ##
 
@@ -57,9 +57,9 @@ If the predicted sentiment is sad, we sample from the sad music generation model
 
 ### Saving and Loading Models ###
 
-All the code saves and loads the models in such a way that they can resume training AND also provide predictions. All models are saved under the `Models` folder.
+All the code saves and loads the models in such a way that they can resume training and provide predictions. All models are saved under the `Models` folder.
 
-The convention we used is we save the model as `<model_name>-<number of epochs>`. For example if we train a model named `example` for 20 epochs, `example-20.pth` will be the filename its saved as.
+The convention we used is we save the model as `<model_name>-<number of epochs>`. For example, if we train a model named `example` for 20 epochs, `example-20.pth` will be the filename its saved as.
 
 ### Sentiment Analysis Model ###
 
@@ -73,7 +73,7 @@ We used a bi-directional GRU Recurrent Neural Net model. Out of all the GRU acti
 
 We first build a vocab dictionary of characters that are found in the training dataset. This dictionary assigns an index to each character which will be used to encode that character into a one-hot vector. 
 
-The inputted text's characters is converted into a series of one-hot vectors using the previously mentioned vocab dictionary and this series of one-hot vectors is fed into the GRU.
+The inputted text's characters are converted into a series of one-hot vectors using the previously mentioned vocab dictionary and this series of one-hot vectors is fed into the GRU.
 
 Since we are batching the dataset, all text sequences in a batch are padded with a "padding character" so that the input length is the same for all examples in a batch. If a character in the example is not found in the dictionary, it is encoded as an "unknown character".
 
@@ -133,7 +133,7 @@ The GRU is used to make sure the character we generate on this pass depends on t
 
 **How we generate music:**
 
-The AI is trained on a two datasets, one for happy songs and one for sad songs. We separated songs into happy and sad based on the mode.
+The AI is trained on two datasets, one for happy songs and one for sad songs. We separated songs into happy and sad based on the mode.
 There are 7 common modes in music, in order from darkest to brightest:
 * Locrian
 * Phrygian
@@ -143,7 +143,7 @@ There are 7 common modes in music, in order from darkest to brightest:
 * Major
 * Lydian
 
-We defined 'happy' as any song written in Major or Lydian mode, all else being called sad. It is important to note that Mixolydian isn't always sad in practice but for our purposes we decided to group it in with sad as it is rarely as bright as Major or Lydian. 
+We defined 'happy' as any song written in Major or Lydian mode, all else being called sad. It is important to note that Mixolydian is not always sad in practice but for our purposes we decided to group it in with sad as it is rarely as bright as Major or Lydian. 
 
 For further information we used [this video](https://www.youtube.com/watch?v=jNY_ZCUBmcA)
 
@@ -182,14 +182,14 @@ The first graph is happy, the second one is sad.
 
 ___NOTE:___
 
-When training a sad model an unknown CUDA error may occur. If it happens then you can resume training the model from the last sucessful epoch. 
+When training a sad model an unknown CUDA error may occur. If it happens then you can resume training the model from the last successful epoch. 
 
 **Getting the data**
 
 Here is how we got the data for generating the music:
 
 1. First we downloaded abc files from [this collection](https://abcnotation.com/tunes), we recommend the *A cleaned version of the Nottingham dataset for machine learning research* as a start as it is well formatted and small enough to train simple models on. 
-The github link can be found [here](https://github.com/jukedeck/nottingham-dataset)
+The GitHub link can be found [here](https://github.com/jukedeck/nottingham-dataset)
 
 2. Place all the abc files inside one folder
 
@@ -215,7 +215,7 @@ We used Microsoft Azure and the python package `flask` to deploy the webapp. The
 
 For front end we only used `CSS` and `html` with no `javascript`. 
 
-For source control we used `Kudu` and `github` to maintain and update the website. 
+For source control we used `Kudu` and `GitHub` to maintain and update the website. 
 
 ## Licensing ##
 
@@ -225,7 +225,7 @@ For source control we used `Kudu` and `github` to maintain and update the websit
 
 - Much of our code is based on these [course notes](https://www.cs.toronto.edu/~lczhang/360/) by Lisa Zhang, 2019
     - full URL: https://www.cs.toronto.edu/~lczhang/360/
-- The [abcMIDI package](http://abc.sourceforge.net/abcMIDI/original/) is used conver the ABC file into a MIDI file, written by James Allwright, supported by Seymour Shlien, 2006
+- The [abcMIDI package](http://abc.sourceforge.net/abcMIDI/original/) is used convert the ABC file into a MIDI file, written by James Allwright, supported by Seymour Shlien, 2006
     - full URL: http://abc.sourceforge.net/abcMIDI/original/
 - The ABC files we used for training can be found [Here](https://abcnotation.com/tunes)
     - full URL: https://abcnotation.com/tunes
